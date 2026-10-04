@@ -657,9 +657,23 @@
 
     function renderReview() {
       const s = completedSubmission;
+      const sortedAll = [...submissions].sort((a, b) => {
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+        if (a.timeSpentSeconds !== b.timeSpentSeconds) return a.timeSpentSeconds - b.timeSpentSeconds;
+        return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+      });
+      const rankIndex = sortedAll.findIndex(item => item.id === s.id);
+      const myRank = rankIndex >= 0 ? rankIndex + 1 : 1;
+      const totalCandidates = sortedAll.length;
+
+      // So sánh với lần thi trước (nếu có)
+      const prevAttempts = submissions.filter(item => item.id !== s.id && item.studentName.trim().toLowerCase() === s.studentName.trim().toLowerCase());
+      const lastAttempt = prevAttempts.length > 0 ? prevAttempts[0] : null;
+      const scoreDiff = lastAttempt ? Math.round((s.totalScore - lastAttempt.totalScore) * 10) / 10 : 0;
+
       return `
         <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
-          <div class="relative rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 mb-8 shadow-xl shadow-slate-200/50 text-center overflow-hidden">
+          <div class="relative rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 mb-6 shadow-xl shadow-slate-200/50 text-center overflow-hidden">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold mb-4 border border-indigo-200">
               <span>🏆 BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM</span>
             </div>
@@ -681,6 +695,9 @@
                 </span>
                 <span class="px-3.5 py-1.5 rounded-xl bg-rose-100 text-rose-800 text-xs sm:text-sm font-bold border border-rose-300 shadow-sm">
                   ✗ Số câu SAI: <strong>${s.totalCount - s.correctCount} / ${s.totalCount}</strong> câu
+                </span>
+                <span class="px-3.5 py-1.5 rounded-xl bg-sky-100 text-sky-800 text-xs sm:text-sm font-bold border border-sky-300 shadow-sm">
+                  ⏱️ Thời gian: <strong>${Math.floor(s.timeSpentSeconds / 60)}m ${s.timeSpentSeconds % 60}s</strong>
                 </span>
               </div>
             </div>
@@ -706,6 +723,37 @@
                 <div class="text-xs font-bold text-purple-800 uppercase mb-1">Mức Vận Dụng (3 câu)</div>
                 <div class="text-2xl font-black text-slate-900">${s.breakdown.van_dung.correct} / ${s.breakdown.van_dung.total}</div>
               </div>
+            </div>
+          </div>
+
+          <!-- Card Xếp hạng & So sánh với kết quả cũ -->
+          <div class="p-6 rounded-3xl bg-amber-50/80 border-2 border-amber-300 shadow-md mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-amber-200 pb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-2xl">${myRank === 1 ? '🥇' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏆'}</span>
+                <div>
+                  <h3 class="font-black text-slate-900 text-base sm:text-lg">Xếp Hạng Bảng Vinh Danh: Hạng #${myRank} / ${totalCandidates}</h3>
+                  <p class="text-xs text-slate-600">Đã cập nhật tự động vào bảng vinh danh toàn hệ thống</p>
+                </div>
+              </div>
+              <button onclick="setTab('leaderboard')" class="py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow cursor-pointer">
+                XEM BẢNG VINH DANH ➔
+              </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-amber-200 text-xs sm:text-sm text-slate-700">
+              ${lastAttempt ? `
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span>So với bài làm trước (${lastAttempt.totalScore.toFixed(1)}đ):</span>
+                  <span class="font-bold ${scoreDiff > 0 ? 'text-emerald-700' : scoreDiff < 0 ? 'text-rose-700' : 'text-sky-700'}">
+                    ${scoreDiff > 0 ? '+' + scoreDiff + ' điểm (Tiến bộ vượt bậc! 📈)' : scoreDiff < 0 ? scoreDiff + ' điểm' : 'Giữ nguyên phong độ ✨'}
+                  </span>
+                </div>
+              ` : `
+                <div class="text-indigo-900">
+                  🌱 <strong>Lượt thi đầu tiên:</strong> Em đã hoàn thành xuất sắc bài thi và ghi danh tại vị trí <strong>#${myRank}</strong> trên Bảng Vinh Danh!
+                </div>
+              `}
             </div>
           </div>
 
@@ -750,7 +798,11 @@
     }
 
     function renderLeaderboard() {
-      const sorted = [...submissions].sort((a, b) => b.totalScore - a.totalScore);
+      const sorted = [...submissions].sort((a, b) => {
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+        if (a.timeSpentSeconds !== b.timeSpentSeconds) return a.timeSpentSeconds - b.timeSpentSeconds;
+        return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+      });
       return `
         <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
           <div class="text-center mb-8">
