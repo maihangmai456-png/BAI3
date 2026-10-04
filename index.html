@@ -103,6 +103,35 @@
     let submissions = rawSubs.filter(s => !s.id.startsWith('sub-sample-') && !s.id.startsWith('s1') && !s.id.startsWith('s2') && !s.id.startsWith('s3') && !s.id.startsWith('s4'));
     localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
 
+    // Đồng bộ thời gian thực từ máy chủ nếu mở trong mạng trường hoặc web
+    function syncServerSubmissions() {
+      try {
+        fetch('/api/submissions').then(r => r.json()).then(data => {
+          if (data && Array.isArray(data.submissions)) {
+            submissions = data.submissions;
+            localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
+            render();
+          }
+        }).catch(() => {});
+      } catch(e) {}
+    }
+    syncServerSubmissions();
+    setInterval(syncServerSubmissions, 4000);
+
+    try {
+      const sse = new EventSource('/api/events');
+      sse.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg.submissions && Array.isArray(msg.submissions)) {
+            submissions = msg.submissions;
+            localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
+            render();
+          }
+        } catch(err) {}
+      };
+    } catch(e) {}
+
     let activeExam = null;
     let activeStudent = null;
     let currentQIndex = 0;
@@ -484,6 +513,15 @@
       // Chỉ lưu vào danh sách khi học sinh thực tế nộp bài
       submissions.unshift(completedSubmission);
       localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
+
+      // Gửi lên máy chủ để đồng bộ thời gian thực cho mọi máy khác đang mở trang
+      try {
+        fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(completedSubmission)
+        }).catch(() => {});
+      } catch(e) {}
 
       activeExam = null;
       render();
