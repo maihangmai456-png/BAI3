@@ -63,6 +63,42 @@
           osc.stop(this.ctx.currentTime + 0.05);
         } catch(e) {}
       }
+      correct(streak = 1) {
+        if (this.muted) return;
+        try {
+          this.init();
+          const base = 523.25;
+          const mult = Math.min(1.5, 1 + streak * 0.05);
+          [base * mult, base * 1.25 * mult, base * 1.5 * mult, base * 2 * mult].forEach((f, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.07);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.07 + 0.2);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + i * 0.07);
+            osc.stop(this.ctx.currentTime + i * 0.07 + 0.22);
+          });
+        } catch(e) {}
+      }
+      wrong() {
+        if (this.muted) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(130, this.ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.26);
+        } catch(e) {}
+      }
       victory() {
         if (this.muted) return;
         try {
@@ -97,49 +133,82 @@
     let currentTab = 'student'; // 'student' | 'teacher' | 'leaderboard'
     let isTeacherLoggedIn = false;
     let questions = JSON.parse(localStorage.getItem('quiz_questions_bank_v1')) || QUESTIONS_BANK;
-    
-    // Dữ liệu ban đầu hoàn toàn rỗng - Tự động xóa sạch dữ liệu mẫu cũ nếu có
-    let rawSubs = JSON.parse(localStorage.getItem('quiz_student_submissions_v1')) || [];
-    let submissions = rawSubs.filter(s => !s.id.startsWith('sub-sample-') && !s.id.startsWith('s1') && !s.id.startsWith('s2') && !s.id.startsWith('s3') && !s.id.startsWith('s4'));
-    localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
-
-    // Đồng bộ thời gian thực từ máy chủ nếu mở trong mạng trường hoặc web
-    function syncServerSubmissions() {
-      try {
-        fetch('/api/submissions').then(r => r.json()).then(data => {
-          if (data && Array.isArray(data.submissions)) {
-            submissions = data.submissions;
-            localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
-            render();
-          }
-        }).catch(() => {});
-      } catch(e) {}
-    }
-    syncServerSubmissions();
-    setInterval(syncServerSubmissions, 4000);
-
-    try {
-      const sse = new EventSource('/api/events');
-      sse.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          if (msg.submissions && Array.isArray(msg.submissions)) {
-            submissions = msg.submissions;
-            localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
-            render();
-          }
-        } catch(err) {}
-      };
-    } catch(e) {}
+    let submissions = JSON.parse(localStorage.getItem('quiz_student_submissions_v1')) || [
+      {
+        id: 's1',
+        studentName: '🚀 Nguyễn Hoàng Nam',
+        studentClass: '10C05',
+        examCode: 'CN10-B3-7821',
+        submittedAt: new Date(Date.now() - 7200000).toISOString(),
+        totalScore: 10.0,
+        correctCount: 10,
+        totalCount: 10,
+        breakdown: { biet: { correct: 4, total: 4 }, hieu: { correct: 3, total: 3 }, van_dung: { correct: 3, total: 3 } },
+        timeSpentSeconds: 142,
+        gamifiedScore: 14850,
+        maxStreak: 10,
+        answers: []
+      },
+      {
+        id: 's2',
+        studentName: '⭐ Trần Minh Thư',
+        studentClass: '10C06',
+        examCode: 'CN10-B3-6192',
+        submittedAt: new Date(Date.now() - 14400000).toISOString(),
+        totalScore: 9.0,
+        correctCount: 9,
+        totalCount: 10,
+        breakdown: { biet: { correct: 4, total: 4 }, hieu: { correct: 3, total: 3 }, van_dung: { correct: 2, total: 3 } },
+        timeSpentSeconds: 165,
+        gamifiedScore: 12900,
+        maxStreak: 7,
+        answers: []
+      },
+      {
+        id: 's3',
+        studentName: '⚡ Lê Bảo Long',
+        studentClass: '10C07',
+        examCode: 'CN10-B3-4410',
+        submittedAt: new Date(Date.now() - 21600000).toISOString(),
+        totalScore: 8.0,
+        correctCount: 8,
+        totalCount: 10,
+        breakdown: { biet: { correct: 4, total: 4 }, hieu: { correct: 2, total: 3 }, van_dung: { correct: 2, total: 3 } },
+        timeSpentSeconds: 180,
+        gamifiedScore: 10800,
+        maxStreak: 5,
+        answers: []
+      },
+      {
+        id: 's4',
+        studentName: '💡 Phạm Thu Trang',
+        studentClass: '10C08',
+        examCode: 'CN10-B3-9124',
+        submittedAt: new Date(Date.now() - 28800000).toISOString(),
+        totalScore: 7.0,
+        correctCount: 7,
+        totalCount: 10,
+        breakdown: { biet: { correct: 3, total: 4 }, hieu: { correct: 2, total: 3 }, van_dung: { correct: 2, total: 3 } },
+        timeSpentSeconds: 195,
+        gamifiedScore: 9100,
+        maxStreak: 4,
+        answers: []
+      }
+    ];
 
     let activeExam = null;
     let activeStudent = null;
     let currentQIndex = 0;
-    let userAnswers = {}; // [qIndex]: optionIndex
-    let timeLeft = 15 * 60; // 15 phút
-    let examTimer = null;
+    let currentTimer = null;
+    let timeLeft = 25;
+    let currentSelectedOption = null;
+    let isCurrentAnswered = false;
+    let points = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let examAnswers = [];
     let completedSubmission = null;
-    let examStartTime = Date.now();
+    let questionStartTime = Date.now();
 
     function shuffle(arr) {
       const a = [...arr];
@@ -219,7 +288,7 @@
                     </span>
                   </div>
                   <p class="text-xs text-slate-500 hidden sm:block">
-                    Ngân hàng ${questions.length} câu — Đề thi 10 câu
+                    Ngân hàng ${questions.length} câu (${countBiet} Biết • ${countHieu} Hiểu • ${countVanDung} Vận dụng) — Đề thi 10 câu
                   </p>
                 </div>
               </div>
@@ -229,7 +298,7 @@
                   Phòng Thi HS
                 </button>
                 <button onclick="setTab('leaderboard')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition ${currentTab === 'leaderboard' ? 'bg-amber-500 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-                  Bảng Vinh Danh (${submissions.length})
+                  Bảng Vinh Danh
                 </button>
                 <button onclick="setTab('teacher')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition ${currentTab === 'teacher' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
                   ${isTeacherLoggedIn ? 'GV: Mai Hằng' : 'Giáo Viên'}
@@ -257,12 +326,16 @@
           </div>
         </footer>
       `;
+
+      if (activeExam) {
+        attachQuizGameHandlers();
+      }
     }
 
     function setTab(tab) {
       if (activeExam) {
-        if (!confirm('Bạn đang làm bài thi. Rời đi sẽ hủy kết quả câu hỏi hiện tại. Bạn có chắc không?')) return;
-        if (examTimer) clearInterval(examTimer);
+        if (!confirm('Bạn đang làm bài thi. Rời đi sẽ hủy bài thi hiện tại. Bạn có chắc không?')) return;
+        clearInterval(currentTimer);
         activeExam = null;
       }
       sound.click();
@@ -287,7 +360,7 @@
                   <span>✨ Chương 1: Đại Cương Về Công Nghệ</span>
                 </div>
                 <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight mb-3">
-                  Đấu Trường Quiz: <span class="text-amber-300">Bài 3 - Công Nghệ Phổ Biến</span>
+                  Đấu Trường Quizizz: <span class="text-amber-300">Bài 3 - Công Nghệ Phổ Biến</span>
                 </h1>
                 <p class="text-sm sm:text-base text-indigo-100 mb-4 leading-relaxed">
                   Mỗi đề thi tự động rút ngẫu nhiên <strong class="text-yellow-300">10 câu hỏi</strong> theo ma trận: 
@@ -295,8 +368,10 @@
                   <span class="font-bold text-white">3 câu Hiểu</span> + 
                   <span class="font-bold text-white">3 câu Vận dụng</span>.
                 </p>
-                <div class="p-3 bg-black/25 rounded-2xl text-xs text-amber-200 border border-amber-300/30">
-                  📌 <strong>Quy định chấm thi:</strong> Trong quá trình làm bài 10 câu, đáp án được giữ bí mật. <strong>Chỉ khi nào em bấm "Nộp Bài", hệ thống mới chấm điểm và hiển thị số câu đúng, câu sai kèm lời giải chi tiết.</strong>
+                <div class="flex flex-wrap gap-2 text-xs">
+                  <span class="px-2.5 py-1 rounded-lg bg-black/20 text-white font-medium">✓ Ngân hàng ${questions.length} câu</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-black/20 text-white font-medium">⏱️ Bấm giờ 25s/câu</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-black/20 text-white font-medium">🔥 Combo thưởng điểm</span>
                 </div>
               </div>
               <div class="hidden sm:flex flex-col items-center justify-center p-4 bg-white/10 rounded-2xl border border-white/20">
@@ -401,94 +476,95 @@
 
       activeExam = generateExam();
       currentQIndex = 0;
-      userAnswers = {};
-      timeLeft = 15 * 60; // 15 phút
-      examStartTime = Date.now();
+      points = 0;
+      streak = 0;
+      maxStreak = 0;
+      examAnswers = [];
       completedSubmission = null;
+      startQuestion();
+    }
 
-      if (examTimer) clearInterval(examTimer);
-      examTimer = setInterval(() => {
+    function startQuestion() {
+      timeLeft = 25;
+      currentSelectedOption = null;
+      isCurrentAnswered = false;
+      questionStartTime = Date.now();
+
+      if (currentTimer) clearInterval(currentTimer);
+      currentTimer = setInterval(() => {
         timeLeft--;
         if (timeLeft <= 0) {
-          clearInterval(examTimer);
-          finishExam();
+          clearInterval(currentTimer);
+          handleAnswer(-1);
         } else {
-          const tText = document.getElementById('examTimerDisplay');
-          if (tText) {
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            tText.innerText = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-          }
+          updateTimerBar();
         }
       }, 1000);
 
       render();
     }
 
-    function selectExamOption(optIdx) {
-      sound.click();
-      userAnswers[currentQIndex] = optIdx;
-      render();
+    function updateTimerBar() {
+      const bar = document.getElementById('timerProgressBar');
+      const text = document.getElementById('timerText');
+      if (bar) bar.style.width = ((timeLeft / 25) * 100) + '%';
+      if (text) text.innerText = timeLeft + 's';
     }
 
-    function jumpToQuestion(idx) {
-      sound.click();
-      currentQIndex = idx;
-      render();
-    }
+    function handleAnswer(optIdx) {
+      if (isCurrentAnswered) return;
+      if (currentTimer) clearInterval(currentTimer);
 
-    function prevExamQuestion() {
-      sound.click();
-      if (currentQIndex > 0) {
-        currentQIndex--;
-        render();
+      isCurrentAnswered = true;
+      currentSelectedOption = optIdx;
+
+      const q = activeExam.questions[currentQIndex];
+      const isCorrect = optIdx === q.correctIndex;
+      const timeTaken = Math.max(1, Math.round((Date.now() - questionStartTime) / 1000));
+
+      if (isCorrect) {
+        streak++;
+        if (streak > maxStreak) maxStreak = streak;
+        const speedBonus = Math.round((timeLeft / 25) * 500);
+        points += 1000 + speedBonus + Math.min(1000, streak * 150);
+        sound.correct(streak);
+      } else {
+        streak = 0;
+        sound.wrong();
       }
+
+      examAnswers.push({
+        questionId: q.id,
+        questionText: q.question,
+        level: q.level,
+        options: q.options,
+        selectedOptionIndex: optIdx,
+        correctOptionIndex: q.correctIndex,
+        isCorrect,
+        explanation: q.explanation,
+        timeTakenSeconds: timeTaken
+      });
+
+      render();
     }
 
-    function nextExamQuestion() {
+    function nextQuestion() {
       sound.click();
       if (currentQIndex + 1 < activeExam.questions.length) {
         currentQIndex++;
-        render();
-      }
-    }
-
-    function confirmSubmitExam() {
-      const answered = Object.keys(userAnswers).length;
-      const total = activeExam.questions.length;
-      let msg = 'Em đã hoàn thành ' + answered + '/' + total + ' câu hỏi. Xác nhận NỘP BÀI THI để hệ thống chấm điểm?';
-      if (answered < total) {
-        msg = '⚠️ Cảnh báo: Em còn ' + (total - answered) + ' câu chưa trả lời! Em có chắc chắn muốn nộp bài không?';
-      }
-      if (confirm(msg)) {
+        startQuestion();
+      } else {
         finishExam();
       }
     }
 
     function finishExam() {
-      if (examTimer) clearInterval(examTimer);
+      if (currentTimer) clearInterval(currentTimer);
       
+      const correctCount = examAnswers.filter(a => a.isCorrect).length;
       const totalCount = activeExam.questions.length;
-      const timeSpent = Math.max(1, Math.round((Date.now() - examStartTime) / 1000));
-
-      const answersList = activeExam.questions.map((q, idx) => {
-        const selected = userAnswers[idx] !== undefined ? userAnswers[idx] : -1;
-        const isCorrect = selected === q.correctIndex;
-        return {
-          questionId: q.id,
-          questionText: q.question,
-          level: q.level,
-          options: q.options,
-          selectedOptionIndex: selected,
-          correctOptionIndex: q.correctIndex,
-          isCorrect: isCorrect,
-          explanation: q.explanation,
-          timeTakenSeconds: Math.round(timeSpent / totalCount)
-        };
-      });
-
-      const correctCount = answersList.filter(a => a.isCorrect).length;
       const totalScore = Math.round((correctCount / totalCount) * 10 * 10) / 10;
+      const totalTime = examAnswers.reduce((acc, a) => acc + a.timeTakenSeconds, 0);
 
       completedSubmission = {
         id: 'sub-' + Date.now(),
@@ -496,32 +572,22 @@
         studentClass: activeStudent.studentClass,
         examCode: activeExam.examCode,
         submittedAt: new Date().toISOString(),
-        totalScore: totalScore,
-        correctCount: correctCount,
-        totalCount: totalCount,
+        totalScore,
+        correctCount,
+        totalCount,
         breakdown: {
-          biet: { correct: answersList.filter(a => a.level === 'biet' && a.isCorrect).length, total: answersList.filter(a => a.level === 'biet').length },
-          hieu: { correct: answersList.filter(a => a.level === 'hieu' && a.isCorrect).length, total: answersList.filter(a => a.level === 'hieu').length },
-          van_dung: { correct: answersList.filter(a => a.level === 'van_dung' && a.isCorrect).length, total: answersList.filter(a => a.level === 'van_dung').length }
+          biet: { correct: examAnswers.filter(a => a.level === 'biet' && a.isCorrect).length, total: examAnswers.filter(a => a.level === 'biet').length },
+          hieu: { correct: examAnswers.filter(a => a.level === 'hieu' && a.isCorrect).length, total: examAnswers.filter(a => a.level === 'hieu').length },
+          van_dung: { correct: examAnswers.filter(a => a.level === 'van_dung' && a.isCorrect).length, total: examAnswers.filter(a => a.level === 'van_dung').length }
         },
-        timeSpentSeconds: timeSpent,
-        gamifiedScore: correctCount * 1000,
-        maxStreak: 0,
-        answers: answersList
+        timeSpentSeconds: totalTime,
+        gamifiedScore: points,
+        maxStreak,
+        answers: examAnswers
       };
 
-      // Chỉ lưu vào danh sách khi học sinh thực tế nộp bài
       submissions.unshift(completedSubmission);
       localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
-
-      // Gửi lên máy chủ để đồng bộ thời gian thực cho mọi máy khác đang mở trang
-      try {
-        fetch('/api/submissions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(completedSubmission)
-        }).catch(() => {});
-      } catch(e) {}
 
       activeExam = null;
       render();
@@ -549,47 +615,31 @@
         ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300">Mức 2: Thông Hiểu (3 câu)</span>'
         : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300">Mức 3: Vận Dụng (3 câu)</span>';
 
-      const selectedOpt = userAnswers[currentQIndex];
-      const answeredCount = Object.keys(userAnswers).length;
-      const totalCount = activeExam.questions.length;
-
-      const m = Math.floor(timeLeft / 60);
-      const s = timeLeft % 60;
-      const timeStr = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      const isCorrect = currentSelectedOption === q.correctIndex;
 
       return `
         <div class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
-          <div class="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-sm mb-6">
-            <div class="flex items-center justify-between mb-4">
+          <div class="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-lg shadow-slate-200/50 mb-6">
+            <div class="flex items-center justify-between mb-3">
               <div class="flex items-center space-x-2">
                 <span class="text-xs font-extrabold px-3 py-1 rounded-xl bg-indigo-600 text-white">
-                  CÂU ${currentQIndex + 1} / ${totalCount}
+                  CÂU ${currentQIndex + 1} / ${activeExam.questions.length}
                 </span>
                 ${levelBadge}
               </div>
               <div class="flex items-center space-x-3">
-                <div class="px-3.5 py-1.5 rounded-2xl bg-slate-100 border border-slate-300 font-mono font-bold text-xs sm:text-sm text-slate-800">
-                  ⏱️ <span id="examTimerDisplay">${timeStr}</span>
-                </div>
-                <button onclick="confirmSubmitExam()" class="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md cursor-pointer">
-                  NỘP BÀI (${answeredCount}/${totalCount})
-                </button>
+                ${streak > 1 ? `<span class="px-3 py-1 rounded-xl bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold">🔥 COMBO x${streak}</span>` : ''}
+                <span class="px-3 py-1 rounded-xl bg-purple-100 text-purple-800 border border-purple-300 text-xs font-bold">⚡ ${points.toLocaleString()} pts</span>
                 <button onclick="setTab('student')" class="text-xs text-slate-400 hover:text-slate-600 font-semibold cursor-pointer">Thoát</button>
               </div>
             </div>
-
-            <!-- Quick 10 Question Navigation -->
-            <div class="border-t border-slate-100 pt-3">
-              <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
-                <span>Danh sách 10 câu hỏi (Nhấn để chuyển nhanh):</span>
-                <span class="text-indigo-600 font-bold">Đã làm: ${answeredCount}/${totalCount} câu</span>
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
+                <span>⏱️ Thời gian câu hỏi</span>
+                <span id="timerText" class="font-mono text-sm font-extrabold text-slate-700">${timeLeft}s</span>
               </div>
-              <div class="grid grid-cols-10 gap-1.5">
-                ${activeExam.questions.map((_, idx) => `
-                  <button onclick="jumpToQuestion(${idx})" class="py-2 rounded-xl text-xs font-black transition cursor-pointer ${currentQIndex === idx ? 'bg-indigo-600 text-white ring-2 ring-indigo-400' : userAnswers[idx] !== undefined ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-                    ${idx + 1}
-                  </button>
-                `).join('')}
+              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                <div id="timerProgressBar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-indigo-500 transition-all duration-1000" style="width: ${(timeLeft / 25) * 100}%"></div>
               </div>
             </div>
           </div>
@@ -605,75 +655,61 @@
             </h2>
           </div>
 
-          <!-- Options Grid (No right/wrong spoiler until submit) -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             ${q.options.map((opt, idx) => {
               const s = optStyles[idx];
-              const isThisSelected = selectedOpt === idx;
-              let btnClass = isThisSelected 
-                ? 'bg-indigo-600 text-white ring-4 ring-indigo-300 shadow-xl scale-[1.01]' 
-                : s.bg + ' text-white shadow-md hover:scale-[1.01]';
+              let btnClass = s.bg + ' text-white shadow-md';
+              if (isCurrentAnswered) {
+                if (idx === q.correctIndex) {
+                  btnClass = 'bg-emerald-600 ring-4 ring-emerald-300 text-white scale-102';
+                } else if (idx === currentSelectedOption && idx !== q.correctIndex) {
+                  btnClass = 'bg-rose-600 text-white line-through opacity-70';
+                } else {
+                  btnClass = 'bg-slate-200 text-slate-500 opacity-40 shadow-none';
+                }
+              }
 
               return `
-                <button onclick="selectExamOption(${idx})" class="${btnClass} relative p-5 sm:p-6 rounded-2xl font-bold text-left transition-all cursor-pointer">
+                <button onclick="handleAnswer(${idx})" ${isCurrentAnswered ? 'disabled' : ''} class="${btnClass} relative p-5 sm:p-6 rounded-2xl font-bold text-left transition-all cursor-pointer">
                   <div class="flex items-start space-x-3.5">
-                    <span class="w-8 h-8 rounded-xl ${isThisSelected ? 'bg-white text-indigo-700' : 'bg-black/15 text-white'} flex items-center justify-center font-black text-sm shrink-0">
-                      ${isThisSelected ? '✓' : s.sym}
-                    </span>
+                    <span class="w-8 h-8 rounded-xl bg-black/15 flex items-center justify-center font-black text-sm shrink-0">${s.sym}</span>
                     <div class="flex-1">
                       <span class="text-xs opacity-80 font-semibold block mb-0.5">Phương án ${s.label}:</span>
                       <span class="text-sm sm:text-base leading-snug">${opt}</span>
                     </div>
-                    ${isThisSelected ? '<span class="text-[11px] bg-white text-indigo-700 px-2 py-0.5 rounded-lg font-black shrink-0">ĐÃ CHỌN</span>' : ''}
                   </div>
                 </button>
               `;
             }).join('')}
           </div>
 
-          <!-- Bottom Navigation -->
-          <div class="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-3xl shadow-sm">
-            <button onclick="prevExamQuestion()" ${currentQIndex === 0 ? 'disabled class="opacity-40 cursor-not-allowed px-4 py-2.5 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold"' : 'class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer"'}>
-              ◄ Câu trước
-            </button>
-
-            <span class="text-xs text-slate-500 font-semibold">
-              ${userAnswers[currentQIndex] !== undefined ? '<strong class="text-emerald-700">✓ Đã chọn đáp án</strong>' : '<span class="text-slate-400">Chưa chọn đáp án</span>'}
-            </span>
-
-            ${currentQIndex + 1 < totalCount ? `
-              <button onclick="nextExamQuestion()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold cursor-pointer">
-                Câu tiếp theo ►
-              </button>
-            ` : `
-              <button onclick="confirmSubmitExam()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black cursor-pointer shadow-md">
-                NỘP BÀI THI ➔
-              </button>
-            `}
-          </div>
+          ${isCurrentAnswered ? `
+            <div class="p-6 rounded-3xl border mb-6 shadow-xl ${isCorrect ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300'}">
+              <div class="flex items-center justify-between mb-3">
+                <span class="font-extrabold text-lg sm:text-xl ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                  ${isCorrect ? '✓ CHÍNH XÁC! TUYỆT VỜI 🎉' : '✗ CHƯA CHÍNH XÁC! 💡'}
+                </span>
+                <button onclick="nextQuestion()" class="py-2.5 px-6 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-extrabold text-sm sm:text-base shadow-md cursor-pointer">
+                  ${currentQIndex + 1 < activeExam.questions.length ? 'CÂU TIẾP THEO ➔' : 'XEM KẾT QUẢ ➔'}
+                </button>
+              </div>
+              <div class="text-sm text-slate-800 bg-white p-4 rounded-2xl border border-slate-200">
+                <div class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">Kiến thức cốt lõi (SGK Công nghệ 10):</div>
+                ${q.explanation}
+              </div>
+            </div>
+          ` : ''}
         </div>
       `;
     }
 
+    function attachQuizGameHandlers() {}
+
     function renderReview() {
       const s = completedSubmission;
-      const sortedAll = [...submissions].sort((a, b) => {
-        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-        if (a.timeSpentSeconds !== b.timeSpentSeconds) return a.timeSpentSeconds - b.timeSpentSeconds;
-        return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
-      });
-      const rankIndex = sortedAll.findIndex(item => item.id === s.id);
-      const myRank = rankIndex >= 0 ? rankIndex + 1 : 1;
-      const totalCandidates = sortedAll.length;
-
-      // So sánh với lần thi trước (nếu có)
-      const prevAttempts = submissions.filter(item => item.id !== s.id && item.studentName.trim().toLowerCase() === s.studentName.trim().toLowerCase());
-      const lastAttempt = prevAttempts.length > 0 ? prevAttempts[0] : null;
-      const scoreDiff = lastAttempt ? Math.round((s.totalScore - lastAttempt.totalScore) * 10) / 10 : 0;
-
       return `
         <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
-          <div class="relative rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 mb-6 shadow-xl shadow-slate-200/50 text-center overflow-hidden">
+          <div class="relative rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 mb-8 shadow-xl shadow-slate-200/50 text-center overflow-hidden">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold mb-4 border border-indigo-200">
               <span>🏆 BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM</span>
             </div>
@@ -687,22 +723,10 @@
                   <span class="text-xs uppercase font-extrabold text-slate-400">Thang 10đ</span>
                 </div>
               </div>
-
-              <!-- Explicit Count of Correct and Wrong -->
-              <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
-                <span class="px-3.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs sm:text-sm font-bold border border-emerald-300 shadow-sm">
-                  ✓ Số câu ĐÚNG: <strong>${s.correctCount} / ${s.totalCount}</strong> câu
-                </span>
-                <span class="px-3.5 py-1.5 rounded-xl bg-rose-100 text-rose-800 text-xs sm:text-sm font-bold border border-rose-300 shadow-sm">
-                  ✗ Số câu SAI: <strong>${s.totalCount - s.correctCount} / ${s.totalCount}</strong> câu
-                </span>
-                <span class="px-3.5 py-1.5 rounded-xl bg-sky-100 text-sky-800 text-xs sm:text-sm font-bold border border-sky-300 shadow-sm">
-                  ⏱️ Thời gian: <strong>${Math.floor(s.timeSpentSeconds / 60)}m ${s.timeSpentSeconds % 60}s</strong>
-                </span>
-              </div>
+              <span class="text-sm font-semibold text-slate-500 mt-2">Đúng ${s.correctCount} / ${s.totalCount} câu</span>
             </div>
 
-            <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-600 mt-2">
+            <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-600">
               <span>Thí sinh: <strong class="text-slate-900">${s.studentName}</strong></span>
               <span>•</span>
               <span>Lớp: <strong class="text-slate-900">${s.studentClass}</strong></span>
@@ -723,37 +747,6 @@
                 <div class="text-xs font-bold text-purple-800 uppercase mb-1">Mức Vận Dụng (3 câu)</div>
                 <div class="text-2xl font-black text-slate-900">${s.breakdown.van_dung.correct} / ${s.breakdown.van_dung.total}</div>
               </div>
-            </div>
-          </div>
-
-          <!-- Card Xếp hạng & So sánh với kết quả cũ -->
-          <div class="p-6 rounded-3xl bg-amber-50/80 border-2 border-amber-300 shadow-md mb-6">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-amber-200 pb-3">
-              <div class="flex items-center space-x-2">
-                <span class="text-2xl">${myRank === 1 ? '🥇' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏆'}</span>
-                <div>
-                  <h3 class="font-black text-slate-900 text-base sm:text-lg">Xếp Hạng Bảng Vinh Danh: Hạng #${myRank} / ${totalCandidates}</h3>
-                  <p class="text-xs text-slate-600">Đã cập nhật tự động vào bảng vinh danh toàn hệ thống</p>
-                </div>
-              </div>
-              <button onclick="setTab('leaderboard')" class="py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow cursor-pointer">
-                XEM BẢNG VINH DANH ➔
-              </button>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl border border-amber-200 text-xs sm:text-sm text-slate-700">
-              ${lastAttempt ? `
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <span>So với bài làm trước (${lastAttempt.totalScore.toFixed(1)}đ):</span>
-                  <span class="font-bold ${scoreDiff > 0 ? 'text-emerald-700' : scoreDiff < 0 ? 'text-rose-700' : 'text-sky-700'}">
-                    ${scoreDiff > 0 ? '+' + scoreDiff + ' điểm (Tiến bộ vượt bậc! 📈)' : scoreDiff < 0 ? scoreDiff + ' điểm' : 'Giữ nguyên phong độ ✨'}
-                  </span>
-                </div>
-              ` : `
-                <div class="text-indigo-900">
-                  🌱 <strong>Lượt thi đầu tiên:</strong> Em đã hoàn thành xuất sắc bài thi và ghi danh tại vị trí <strong>#${myRank}</strong> trên Bảng Vinh Danh!
-                </div>
-              `}
             </div>
           </div>
 
@@ -798,11 +791,7 @@
     }
 
     function renderLeaderboard() {
-      const sorted = [...submissions].sort((a, b) => {
-        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-        if (a.timeSpentSeconds !== b.timeSpentSeconds) return a.timeSpentSeconds - b.timeSpentSeconds;
-        return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
-      });
+      const sorted = [...submissions].sort((a, b) => b.totalScore - a.totalScore || (b.gamifiedScore || 0) - (a.gamifiedScore || 0));
       return `
         <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
           <div class="text-center mb-8">
@@ -813,38 +802,26 @@
             <p class="text-sm text-slate-500 mt-2">Môn Công nghệ 10 - Bài 3: Công nghệ phổ biến • Giáo viên: Mai Hằng</p>
           </div>
 
-          ${sorted.length === 0 ? `
-            <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center shadow-sm">
-              <div class="text-4xl mb-3">🏅</div>
-              <h3 class="text-lg font-bold text-slate-900 mb-1">Chưa Có Dữ Liệu Bảng Xếp Hạng</h3>
-              <p class="text-xs sm:text-sm text-slate-500 mb-6">
-                Chỉ khi nào học sinh vào làm bài và nộp bài thi thực tế, kết quả sẽ tự động lưu lại và vinh danh tại đây!
-              </p>
-              <button onclick="setTab('student')" class="py-3 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md cursor-pointer">
-                Vào Thi Ngay
-              </button>
-            </div>
-          ` : `
-            <div class="space-y-3">
-              ${sorted.map((item, idx) => `
-                <div class="p-4 sm:p-5 rounded-2xl border flex items-center justify-between ${idx === 0 ? 'bg-amber-50/70 border-amber-300 shadow-md' : 'bg-white border-slate-200'}">
-                  <div class="flex items-center space-x-3.5">
-                    <span class="text-xl w-8 text-center">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1)}</span>
-                    <div>
-                      <div class="flex items-center space-x-2">
-                        <span class="font-extrabold text-slate-900">${item.studentName}</span>
-                        <span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700">${item.studentClass}</span>
-                      </div>
-                      <div class="text-xs text-slate-500 mt-0.5">Đúng ${item.correctCount}/${item.totalCount} câu • Mã đề: ${item.examCode}</div>
+          <div class="space-y-3">
+            ${sorted.map((item, idx) => `
+              <div class="p-4 sm:p-5 rounded-2xl border flex items-center justify-between ${idx === 0 ? 'bg-amber-50/70 border-amber-300 shadow-md' : 'bg-white border-slate-200'}">
+                <div class="flex items-center space-x-3.5">
+                  <span class="text-xl w-8 text-center">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1)}</span>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-extrabold text-slate-900">${item.studentName}</span>
+                      <span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700">${item.studentClass}</span>
                     </div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-2xl font-black text-emerald-600">${item.totalScore.toFixed(1)} <span class="text-xs text-slate-400">đ</span></div>
+                    <div class="text-xs text-slate-500 mt-0.5">Đúng ${item.correctCount}/${item.totalCount} câu • Mã đề: ${item.examCode}</div>
                   </div>
                 </div>
-              `).join('')}
-            </div>
-          `}
+                <div class="text-right">
+                  <div class="text-2xl font-black text-emerald-600">${item.totalScore.toFixed(1)} <span class="text-xs text-slate-400">đ</span></div>
+                  <div class="text-xs text-purple-700 font-bold">${(item.gamifiedScore || 0).toLocaleString()} pts</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       `;
     }
@@ -893,7 +870,7 @@
               </div>
               <div>
                 <h1 class="text-xl sm:text-2xl font-black text-slate-900">Khu Vực Quản Trị Giáo Viên: Mai Hằng</h1>
-                <p class="text-xs text-slate-500">Môn: Công nghệ 10 • Quản lý ngân hàng ${questions.length} câu hỏi & theo dõi điểm số bài thi thực tế</p>
+                <p class="text-xs text-slate-500">Môn: Công nghệ 10 • Quản lý ngân hàng ${questions.length} câu hỏi & theo dõi điểm số</p>
               </div>
             </div>
             <button onclick="teacherLogout()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300 shadow-sm cursor-pointer">
@@ -908,9 +885,8 @@
               <div class="text-[11px] text-indigo-600 font-semibold mt-1">${b} Biết • ${h} Hiểu • ${vd} Vận dụng</div>
             </div>
             <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <div class="text-xs font-bold text-slate-500 uppercase">Bài thi thực tế</div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">${submissions.length} bài</div>
-              <div class="text-[11px] text-slate-500 mt-1">Lưu tự động khi HS nộp bài</div>
+              <div class="text-xs font-bold text-slate-500 uppercase">Lượt học sinh thi</div>
+              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">${submissions.length} lượt</div>
             </div>
             <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
               <div class="text-xs font-bold text-slate-500 uppercase">Điểm trung bình</div>
@@ -928,52 +904,41 @@
 
           <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-bold text-slate-900">Danh Sách Bài Thi Của Học Sinh (${submissions.length})</h3>
-              <div class="flex items-center space-x-2">
-                <button onclick="exportCSV()" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer">
-                  📥 Xuất File Excel / CSV
-                </button>
-                <button onclick="clearAllData()" class="py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 text-xs font-bold cursor-pointer">
-                  Xóa lịch sử bài
-                </button>
-              </div>
+              <h3 class="text-lg font-bold text-slate-900">Danh Sách Bài Thi Của Học Sinh</h3>
+              <button onclick="exportCSV()" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer">
+                📥 Xuất File Excel / CSV
+              </button>
             </div>
-            ${submissions.length === 0 ? `
-              <div class="text-center py-10 text-slate-500 text-xs sm:text-sm">
-                Chưa có học sinh nào nộp bài. Khi học sinh vào phòng thi và bấm "Nộp Bài", bài làm sẽ tự động hiển thị tại đây!
-              </div>
-            ` : `
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs sm:text-sm">
-                  <thead class="bg-slate-50 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
-                    <tr>
-                      <th class="py-3 px-4">Thí sinh</th>
-                      <th class="py-3 px-3">Lớp</th>
-                      <th class="py-3 px-3">Mã đề</th>
-                      <th class="py-3 px-3 text-center">Điểm số</th>
-                      <th class="py-3 px-3 text-center">Biết (/4)</th>
-                      <th class="py-3 px-3 text-center">Hiểu (/3)</th>
-                      <th class="py-3 px-3 text-center">Vận dụng (/3)</th>
-                      <th class="py-3 px-3">Thời gian</th>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-50 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr>
+                    <th class="py-3 px-4">Thí sinh</th>
+                    <th class="py-3 px-3">Lớp</th>
+                    <th class="py-3 px-3">Mã đề</th>
+                    <th class="py-3 px-3 text-center">Điểm số</th>
+                    <th class="py-3 px-3 text-center">Biết (/4)</th>
+                    <th class="py-3 px-3 text-center">Hiểu (/3)</th>
+                    <th class="py-3 px-3 text-center">Vận dụng (/3)</th>
+                    <th class="py-3 px-3">Thời gian</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                  ${submissions.map(sub => `
+                    <tr class="hover:bg-slate-50">
+                      <td class="py-3 px-4 font-bold text-slate-900">${sub.studentName}</td>
+                      <td class="py-3 px-3 font-bold text-indigo-600">${sub.studentClass}</td>
+                      <td class="py-3 px-3 font-mono text-xs text-slate-500">${sub.examCode}</td>
+                      <td class="py-3 px-3 text-center font-extrabold ${sub.totalScore >= 8.0 ? 'text-emerald-700' : 'text-slate-900'}">${sub.totalScore.toFixed(1)}</td>
+                      <td class="py-3 px-3 text-center text-emerald-700 font-bold">${sub.breakdown.biet.correct}/4</td>
+                      <td class="py-3 px-3 text-center text-sky-700 font-bold">${sub.breakdown.hieu.correct}/3</td>
+                      <td class="py-3 px-3 text-center text-purple-700 font-bold">${sub.breakdown.van_dung.correct}/3</td>
+                      <td class="py-3 px-3 text-xs">${Math.floor(sub.timeSpentSeconds / 60)}m ${sub.timeSpentSeconds % 60}s</td>
                     </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 text-slate-700">
-                    ${submissions.map(sub => `
-                      <tr class="hover:bg-slate-50">
-                        <td class="py-3 px-4 font-bold text-slate-900">${sub.studentName}</td>
-                        <td class="py-3 px-3 font-bold text-indigo-600">${sub.studentClass}</td>
-                        <td class="py-3 px-3 font-mono text-xs text-slate-500">${sub.examCode}</td>
-                        <td class="py-3 px-3 text-center font-extrabold ${sub.totalScore >= 8.0 ? 'text-emerald-700' : 'text-slate-900'}">${sub.totalScore.toFixed(1)}</td>
-                        <td class="py-3 px-3 text-center text-emerald-700 font-bold">${sub.breakdown.biet.correct}/4</td>
-                        <td class="py-3 px-3 text-center text-sky-700 font-bold">${sub.breakdown.hieu.correct}/3</td>
-                        <td class="py-3 px-3 text-center text-purple-700 font-bold">${sub.breakdown.van_dung.correct}/3</td>
-                        <td class="py-3 px-3 text-xs">${Math.floor(sub.timeSpentSeconds / 60)}m ${sub.timeSpentSeconds % 60}s</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-            `}
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       `;
@@ -985,19 +950,12 @@
       const p = document.getElementById('tPass').value.trim();
 
       if (u === 'maihang' && p === '123456hang') {
-        sound.victory();
+        sound.correct();
         isTeacherLoggedIn = true;
         render();
       } else {
+        sound.wrong();
         document.getElementById('loginErrBox').classList.remove('hidden');
-      }
-    }
-
-    function clearAllData() {
-      if (confirm('Xác nhận xóa hết dữ liệu bài thi của học sinh?')) {
-        submissions = [];
-        localStorage.setItem('quiz_student_submissions_v1', JSON.stringify([]));
-        render();
       }
     }
 
