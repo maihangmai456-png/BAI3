@@ -3,212 +3,474 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz Công Nghệ 10 - Bài 3: Công Nghệ Phổ Biến (Mai Hằng)</title>
+  <title>Quizizz Công Nghệ 10 - Bài 3: Công Nghệ Phổ Biến (Bản Offline Độc Lập)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      background-color: #f8fafc;
-      color: #1e293b;
-      min-height: 100vh;
-    }
-    @media print {
-      body { background-color: #ffffff !important; color: #000000 !important; }
-      .no-print { display: none !important; }
-      .print-only { display: block !important; }
-    }
+    body { font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(147, 51, 234, 0.5); border-radius: 9999px; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
-  <div id="app"></div>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-purple-500 selection:text-white">
 
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-purple-500/20 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 cursor-pointer" onclick="goToLobby()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-500 to-pink-500 flex items-center justify-center text-xl shadow-md shadow-purple-500/30">
+          ✨
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">QUIZIZZ</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">CÔNG NGHỆ 10</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">BẢN OFFLINE</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Bài 3: Công nghệ phổ biến • 100 Câu Chuẩn Hóa</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="navLobbyBtn" onclick="goToLobby()" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold bg-purple-600 text-white shadow">Vào Thi</button>
+        <button id="navLeaderboardBtn" onclick="goToLeaderboard()" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">🏆 Bảng Vàng</button>
+        <button onclick="openBankModal()" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">📖 100 Câu</button>
+        <button id="soundBtn" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-green-400">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 flex flex-col p-4 max-w-6xl mx-auto w-full" id="appRoot">
+
+    <!-- LOBBY SCREEN -->
+    <div id="lobbyScreen" class="w-full max-w-2xl mx-auto my-auto py-4">
+      <div class="bg-slate-800/90 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-6">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-black mb-3 uppercase">
+            ⚡ CÔNG NGHỆ 10 • KẾT NỐI TRI THỨC
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-black text-white mb-2">BÀI 3: CÔNG NGHỆ PHỔ BIẾN</h1>
+          <p class="text-slate-300 text-sm max-w-lg mx-auto">
+            Hệ thống ngân hàng 100 câu hỏi chuẩn hóa (40 Biết, 30 Hiểu, 30 Vận dụng). Tự động tạo đề 10 câu ngẫu nhiên theo ma trận và xuất bảng điểm Excel!
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/60 text-center">
+          <div class="p-2 rounded-xl bg-blue-500/10 border border-blue-500/30">
+            <span class="block text-xl font-black text-blue-400">4 Câu</span>
+            <span class="text-xs font-bold text-slate-300">Nhận Biết</span>
+            <span class="block text-[10px] text-slate-500">(Từ 40 câu)</span>
+          </div>
+          <div class="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30">
+            <span class="block text-xl font-black text-purple-400">3 Câu</span>
+            <span class="text-xs font-bold text-slate-300">Thông Hiểu</span>
+            <span class="block text-[10px] text-slate-500">(Từ 30 câu)</span>
+          </div>
+          <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <span class="block text-xl font-black text-amber-400">3 Câu</span>
+            <span class="text-xs font-bold text-slate-300">Vận Dụng</span>
+            <span class="block text-[10px] text-slate-500">(Từ 30 câu)</span>
+          </div>
+        </div>
+
+        <form onsubmit="handleStartExam(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Họ và Tên Học Sinh *</label>
+              <input type="text" id="inputName" required placeholder="Ví dụ: Nguyễn Văn An" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Lớp Học</label>
+              <select id="inputClass" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="10A1">Lớp 10A1</option>
+                <option value="10A2">Lớp 10A2</option>
+                <option value="10A3">Lớp 10A3</option>
+                <option value="10A4">Lớp 10A4</option>
+                <option value="10A5">Lớp 10A5</option>
+                <option value="10A6">Lớp 10A6</option>
+                <option value="10A7">Lớp 10A7</option>
+                <option value="10A8">Lớp 10A8</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Số Báo Danh (Tùy chọn)</label>
+            <input type="text" id="inputId" placeholder="Ví dụ: SBD-1002" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Chọn Avatar:</label>
+            <div class="flex flex-wrap gap-2 justify-center bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800" id="avatarPicker">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Thời Gian Mỗi Câu:</label>
+            <div class="grid grid-cols-4 gap-2 text-center text-xs font-bold">
+              <button type="button" onclick="setTimePerQ(15)" class="timeBtn py-2 rounded-xl bg-slate-900 border border-slate-700" data-time="15">15s</button>
+              <button type="button" onclick="setTimePerQ(20)" class="timeBtn py-2 rounded-xl bg-purple-600 text-white" data-time="20">20s (Chuẩn)</button>
+              <button type="button" onclick="setTimePerQ(30)" class="timeBtn py-2 rounded-xl bg-slate-900 border border-slate-700" data-time="30">30s</button>
+              <button type="button" onclick="setTimePerQ(0)" class="timeBtn py-2 rounded-xl bg-slate-900 border border-slate-700" data-time="0">Tự do</button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-lg shadow-xl shadow-emerald-500/30 cursor-pointer">
+            ▶ BẮT ĐẦU VÀO THI NGAY
+          </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
+          <span onclick="goToLeaderboard()" class="text-amber-400 hover:underline cursor-pointer font-bold">🏆 Xem Bảng Vàng</span>
+          <span onclick="openBankModal()" class="text-indigo-400 hover:underline cursor-pointer font-bold">📖 100 Câu Hỏi</span>
+          <span onclick="exportAllToExcel()" class="text-emerald-400 hover:underline cursor-pointer font-bold">📊 Xuất File Excel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNTDOWN SCREEN -->
+    <div id="countdownScreen" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center hidden">
+      <div class="text-8xl animate-bounce mb-3" id="cdAvatar">🤖</div>
+      <div class="text-xl font-black text-purple-400 mb-2" id="cdName">SẴN SÀNG!</div>
+      <div class="text-9xl font-black bg-gradient-to-r from-pink-500 to-amber-400 bg-clip-text text-transparent" id="cdNumber">3</div>
+    </div>
+
+    <!-- PLAYING SCREEN -->
+    <div id="playScreen" class="w-full max-w-4xl mx-auto flex-1 flex flex-col justify-between py-2 hidden">
+      <div class="bg-slate-800/90 rounded-2xl p-4 border border-slate-700 mb-3 shadow-xl">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl" id="hudAvatar">🤖</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-black text-white text-lg" id="hudQuestionNum">Câu 1 / 10</span>
+                <span id="hudLevelBadge" class="text-[11px] font-black px-2 py-0.5 rounded-full uppercase bg-blue-500/20 text-blue-300 border border-blue-400/40">Nhận biết</span>
+              </div>
+              <span id="hudCategory" class="text-xs text-slate-400">Luyện kim & Cơ khí</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div id="streakBadge" class="hidden px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white font-black text-xs animate-bounce">
+              🔥 COMBO x<span id="streakNum">2</span>
+            </div>
+            <div class="bg-slate-900 px-4 py-1.5 rounded-xl border border-slate-700 text-right">
+              <span class="block text-[10px] uppercase font-bold text-slate-400">Điểm Quizizz</span>
+              <span class="text-xl font-black text-amber-400 font-mono" id="hudPoints">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="timerContainer" class="mt-3">
+          <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+            <div id="timerBar" class="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-300 w-full"></div>
+          </div>
+          <div class="flex justify-between items-center mt-1 text-[11px] font-bold text-slate-400">
+            <span>Đồng hồ bấm giờ</span>
+            <span id="timerText" class="font-mono text-slate-200">20s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center my-auto">
+        <p class="text-xs uppercase text-slate-400 font-bold mb-2">Công Nghệ 10 • Bài 3: Công nghệ phổ biến</p>
+        <h2 id="qText" class="text-xl sm:text-2xl font-black text-white leading-relaxed">Nội dung câu hỏi...</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 my-3" id="optionsGrid">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- FEEDBACK OVERLAY -->
+    <div id="feedbackModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 hidden">
+      <div class="w-full max-w-lg bg-slate-900 border-2 border-purple-500/50 rounded-3xl p-6 shadow-2xl space-y-4">
+        <div class="flex items-center gap-3">
+          <div id="fbIcon" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-emerald-500/20 text-emerald-400">🎯</div>
+          <div>
+            <h3 id="fbTitle" class="text-xl font-black text-emerald-400">Chính xác tuyệt đối!</h3>
+            <p id="fbPoints" class="text-xs text-amber-300 font-bold">+1,200 Điểm Quizizz!</p>
+          </div>
+        </div>
+
+        <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 text-xs sm:text-sm text-slate-300">
+          <p class="font-bold text-amber-400 mb-1">⚡ Kiến thức SGK Bài 3:</p>
+          <p id="fbExplanation" class="text-slate-200 leading-relaxed"></p>
+        </div>
+
+        <button onclick="nextQuestion()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-base shadow-lg cursor-pointer">
+          CÂU TIẾP THEO ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="resultScreen" class="w-full max-w-2xl mx-auto my-auto py-4 hidden">
+      <div class="bg-slate-800/90 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
+        <div class="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-black">
+          ✓ ĐÃ CẬP NHẬT LÊN HỆ THỐNG CHUNG TOÀN TRƯỜNG!
+        </div>
+
+        <div class="text-5xl mb-2">🏆</div>
+        <h1 class="text-2xl sm:text-3xl font-black text-white" id="resStudentName">Nguyễn Văn An</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1" id="resSubDetails">Lớp 10A1 • ĐỀ-CN10-482</p>
+        <div class="inline-block mt-2 px-4 py-1 rounded-full font-black text-xs uppercase bg-amber-400 text-slate-950" id="resRankBadge">Hạng 1 Hệ Thống</div>
+
+        <div class="grid grid-cols-3 gap-3 my-6">
+          <div class="p-3 sm:p-4 rounded-2xl bg-slate-900 border border-slate-700">
+            <span class="block text-xs font-bold text-slate-400 uppercase">Điểm Số (/10)</span>
+            <span class="text-3xl sm:text-4xl font-black text-emerald-400" id="resScore10">10.0</span>
+          </div>
+          <div class="p-3 sm:p-4 rounded-2xl bg-slate-900 border border-slate-700">
+            <span class="block text-xs font-bold text-slate-400 uppercase">Điểm Quizizz</span>
+            <span class="text-2xl sm:text-3xl font-black text-amber-400 font-mono" id="resPoints">9,500</span>
+          </div>
+          <div class="p-3 sm:p-4 rounded-2xl bg-slate-900 border border-slate-700">
+            <span class="block text-xs font-bold text-slate-400 uppercase">Thời Gian</span>
+            <span class="text-2xl sm:text-3xl font-black text-indigo-300 font-mono" id="resTime">120s</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 mb-6 text-left">
+          <h4 class="text-xs font-bold uppercase text-slate-400 mb-3">Đánh giá theo ma trận đề thi:</h4>
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/30">
+              <span class="block font-bold text-blue-400">Nhận Biết</span>
+              <span class="text-base font-black text-blue-300" id="resNb">4/4</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30">
+              <span class="block font-bold text-purple-400">Thông Hiểu</span>
+              <span class="text-base font-black text-purple-300" id="resTh">3/3</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <span class="block font-bold text-amber-400">Vận Dụng</span>
+              <span class="text-base font-black text-amber-300" id="resVd">3/3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXCEL EXPORT BUTTONS -->
+        <div class="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 mb-6 text-left">
+          <h4 class="font-black text-sm text-emerald-300 mb-2">📥 Lưu Trữ Kết Quả Vào File Excel (.xlsx):</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button onclick="exportSingleStudentExcel()" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow">
+              <span>📊 Tải Phiếu Điểm Cá Nhân (.xlsx)</span>
+            </button>
+            <button onclick="exportAllToExcel()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/50 font-bold text-xs flex items-center justify-center gap-1.5">
+              <span>🏆 Xuất Bảng Điểm Toàn Trường (.xlsx)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <button onclick="openReviewModal()" class="flex-1 py-3 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/40 font-bold text-xs sm:text-sm">
+            📝 Xem Lại 10 Câu Hỏi
+          </button>
+          <button onclick="goToLeaderboard()" class="flex-1 py-3 rounded-xl bg-amber-500 text-slate-950 font-black text-xs sm:text-sm">
+            🏆 Xem Bảng Vàng Hệ Thống
+          </button>
+          <button onclick="goToLobby()" class="py-3 px-4 rounded-xl bg-slate-700 text-white font-bold text-xs sm:text-sm">
+            🔄 Thi Lại Đề Mới
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD SCREEN -->
+    <div id="leaderboardScreen" class="w-full space-y-6 hidden">
+      <div class="bg-gradient-to-r from-purple-900/60 to-slate-900 border border-purple-500/30 rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <span class="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-black uppercase mb-1">
+            🏆 BẢNG ĐIỂM CHUNG HỌC SINH
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-black text-white">BẢNG VÀNG THI ĐẤU TOÀN TRƯỜNG</h1>
+          <p class="text-xs text-slate-300 mt-1">Dữ liệu được lưu trữ trực tiếp và hỗ trợ xuất file Excel đầy đủ.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="exportAllToExcel()" class="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg">
+            📊 Xuất Toàn Bộ Bảng Điểm (.xlsx)
+          </button>
+          <button onclick="goToLobby()" class="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs sm:text-sm shadow-lg">
+            ▶ Làm Bài Thi Mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="flex items-center justify-between gap-3 bg-slate-800 p-4 rounded-2xl border border-slate-700">
+        <select id="filterClass" onchange="renderLeaderboard()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-bold">
+          <option value="ALL">Tất Cả Các Lớp</option>
+        </select>
+        <input type="text" id="searchStudent" oninput="renderLeaderboard()" placeholder="Tìm tên học sinh, mã đề..." class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs w-64">
+      </div>
+
+      <!-- Table -->
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-x-auto shadow-xl">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead class="bg-slate-900 text-slate-400 uppercase text-[11px] font-black border-b border-slate-700">
+            <tr>
+              <th class="py-3 px-3 text-center">Hạng</th>
+              <th class="py-3 px-4">Họ và Tên</th>
+              <th class="py-3 px-3 text-center">Lớp</th>
+              <th class="py-3 px-3">Mã Đề</th>
+              <th class="py-3 px-3 text-center">Điểm (/10)</th>
+              <th class="py-3 px-3 text-center">Điểm Quizizz</th>
+              <th class="py-3 px-3 text-center">Biết / Hiểu / Vận dụng</th>
+              <th class="py-3 px-3 text-center">Thời Gian</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody" class="divide-y divide-slate-700/60 font-medium">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 100 QUESTIONS BANK MODAL -->
+  <div id="bankModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="w-full max-w-4xl bg-slate-900 border border-indigo-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl max-h-[92vh] flex flex-col my-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-xl font-black text-white">📖 NGÂN HÀNG 100 CÂU HỎI CHUẨN HÓA</h2>
+          <p class="text-xs text-slate-400">Công Nghệ 10 • Bài 3: Công nghệ phổ biến (40 Biết, 30 Hiểu, 30 Vận dụng)</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportBankOnlyToExcel()" class="py-1.5 px-3 rounded-xl bg-emerald-600 text-slate-950 font-bold text-xs">
+            📊 Tải 100 Câu (.xlsx)
+          </button>
+          <button onclick="closeBankModal()" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white">✕</button>
+        </div>
+      </div>
+
+      <div class="py-3 flex flex-wrap items-center gap-2 border-b border-slate-800">
+        <select id="bankLevelSelect" onchange="renderBankList()" class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-bold">
+          <option value="ALL">Tất Cả (100 câu)</option>
+          <option value="nb">Nhận Biết (40 câu)</option>
+          <option value="th">Thông Hiểu (30 câu)</option>
+          <option value="vd">Vận Dụng (30 câu)</option>
+        </select>
+        <input type="text" id="bankSearch" oninput="renderBankList()" placeholder="Tìm kiếm nội dung câu hỏi..." class="flex-1 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white">
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-3 py-3 pr-1" id="bankContainer">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEW MODAL -->
+  <div id="reviewModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="w-full max-w-3xl bg-slate-900 border border-purple-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-xl font-black text-white">📝 Chi Tiết 10 Câu Hỏi Bài Vừa Làm</h2>
+          <p class="text-xs text-slate-400" id="reviewSubtitle"></p>
+        </div>
+        <button onclick="closeReviewModal()" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-3 py-3 pr-1" id="reviewContainer">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
   <script>
-    // Embedded 100 Questions Database
-    const QUESTIONS_BANK = [{"id":"nb-01","code":"NB-01","level":"biet","topic":"Luyện kim, cơ khí","question":"Gang được sản xuất chủ yếu từ nguyên liệu nào và bằng thiết bị gì?","options":["Quặng sắt bằng lò cao luyện gang","Gang bằng lò oxi","Gang bằng lò hồ quang","Đá vôi bằng lò nung"],"correctIndex":0,"explanation":"Theo SGK Công nghệ 10 Bài 3: Gang được sản xuất từ quặng sắt bằng lò cao luyện gang."},{"id":"nb-02","code":"NB-02","level":"biet","topic":"Luyện kim, cơ khí","question":"Công nghệ trong lĩnh vực luyện kim, cơ khí được chia thành mấy công nghệ phổ biến?","options":["3 công nghệ","4 công nghệ","5 công nghệ","7 công nghệ"],"correctIndex":2,"explanation":"Có 5 công nghệ phổ biến trong lĩnh vực luyện kim, cơ khí: Luyện kim, Đúc, Gia công cắt gọt, Gia công áp lực, Hàn."},{"id":"nb-03","code":"NB-03","level":"biet","topic":"Luyện kim, cơ khí","question":"Bản chất của công nghệ đúc kim loại là gì?","options":["Bóc đi lớp vật liệu thừa trên phôi tạo thành chi tiết","Nấu chảy kim loại thành trạng thái lỏng, rót vào khuôn, nguội và kết tinh tạo thành vật đúc","Dùng ngoại lực làm kim loại biến dạng dẻo thành hình dáng yêu cầu","Nung nóng làm chảy kim loại ở vùng tiếp xúc để tạo mối nối"],"correctIndex":1,"explanation":"Đúc kim loại là phương pháp nấu kim loại thành trạng thái lỏng, sau đó rót vào khuôn có hình dạng kích thước như sản phẩm, khi nguội kết tinh tạo thành vật đúc."},{"id":"nb-04","code":"NB-04","level":"biet","topic":"Luyện kim, cơ khí","question":"Theo sản phẩm tạo ra, công nghệ luyện kim được chia làm mấy loại chính?","options":["1 loại","2 loại","3 loại","4 loại"],"correctIndex":1,"explanation":"Công nghệ luyện kim chia làm 2 loại: luyện kim đen (tạo ra gang và thép) và luyện kim màu (tạo ra nhôm, đồng, vàng, chì, kẽm,...)."},{"id":"nb-05","code":"NB-05","level":"biet","topic":"Luyện kim, cơ khí","question":"Bản chất của công nghệ gia công cắt gọt là gì?","options":["Rót kim loại lỏng vào lòng khuôn để đông đặc","Bóc đi một phần kim loại của phôi dưới dạng phoi nhờ dụng cụ cắt và máy cắt","Dùng ngoại lực tác dụng lên vật liệu dẻo","Nung nóng chảy mép ghép nối của kim loại"],"correctIndex":1,"explanation":"Gia công cắt gọt là thực hiện việc lấy đi một phần kim loại của phôi dưới dạng phoi nhờ dụng cụ cắt và máy cắt kim loại để tạo ra chi tiết có hình dạng, kích thước theo yêu cầu."},{"id":"nb-06","code":"NB-06","level":"biet","topic":"Luyện kim, cơ khí","question":"Thép được sản xuất chủ yếu từ nguyên liệu nào và bằng các loại lò nào?","options":["Quặng sắt bằng lò cao","Gang bằng lò oxi hoặc lò hồ quang điện","Than đá bằng lò nung","Đồng thau bằng lò đúc"],"correctIndex":1,"explanation":"Thép được sản xuất từ nguyên liệu gang bằng lò thổi oxi (lò LD) hoặc lò hồ quang điện."},{"id":"nb-07","code":"NB-07","level":"biet","topic":"Luyện kim, cơ khí","question":"Bản chất của công nghệ gia công áp lực là gì?","options":["Nấu chảy kim loại rồi rót vào khuôn có hình dáng định sẵn","Cắt bỏ lớp kim loại thừa trên bề mặt phôi","Dựa vào tính dẻo của kim loại, dùng ngoại lực tác dụng làm kim loại biến dạng theo hình dáng yêu cầu","Nối các thanh kim loại lại với nhau bằng nhiệt độ cao"],"correctIndex":2,"explanation":"Gia công áp lực là công nghệ dựa vào tính dẻo của kim loại, dùng ngoại lực của thiết bị làm cho kim loại biến dạng theo hình dáng yêu cầu."},{"id":"nb-08","code":"NB-08","level":"biet","topic":"Điện - điện tử","question":"Động cơ điện gồm có mấy bộ phận chính?","options":["2 bộ phận chính","3 bộ phận chính","4 bộ phận chính","5 bộ phận chính"],"correctIndex":0,"explanation":"Động cơ điện có 2 bộ phận chính là: Stato (phần đứng yên) và Roto (phần quay)."},{"id":"nb-09","code":"NB-09","level":"biet","topic":"Luyện kim, cơ khí","question":"Quá trình luyện gang, thép thường phát sinh những tác nhân gây ô nhiễm nào?","options":["Khí CO2","Bụi kim loại","Tiếng ồn công nghiệp","Cả 3 tác nhân trên"],"correctIndex":3,"explanation":"Lò luyện gang, thép xả ra lượng lớn khí CO2, phát sinh nhiều bụi và tiếng ồn lớn ảnh hưởng đến môi trường."},{"id":"nb-10","code":"NB-10","level":"biet","topic":"Điện - điện tử","question":"Ưu điểm nổi bật giúp đèn LED được sử dụng rộng rãi hiện nay là gì?","options":["Tiết kiệm điện năng","Hiệu quả chiếu sáng cao","Tuổi thọ cao","Cả 3 ưu điểm trên"],"correctIndex":3,"explanation":"Đèn LED có đầy đủ ưu điểm: siêu tiết kiệm điện, hiệu suất phát quang cao, tuổi thọ lên tới hàng chục nghìn giờ."},{"id":"nb-11","code":"NB-11","level":"biet","topic":"Luyện kim, cơ khí","question":"Bản chất của công nghệ hàn là gì?","options":["Tạo mối liên kết cố định giữa các chi tiết kim loại bằng cách nung nóng chảy ở vùng tiếp xúc, khi nguội kết thành một khối","Lấy đi lượng dư kim loại nhờ dao tiện hoặc máy phay","Dùng búa đập làm biến dạng thanh kim loại","Đổ dung dịch kim loại lỏng vào khuôn cát"],"correctIndex":0,"explanation":"Công nghệ hàn tạo mối liên kết cố định giữa các chi tiết kim loại bằng cách nung nóng chỗ nối đến trạng thái hàn (chảy hoặc dẻo), sau đó kết tinh tạo mối hàn."},{"id":"nb-12","code":"NB-12","level":"biet","topic":"Điện - điện tử","question":"Hai bộ phận chính của động cơ điện xoay chiều là:","options":["Stato và Roto","Piston và Xi lanh","Vỏ máy và Cực từ","Trục cán và Ổ bi"],"correctIndex":0,"explanation":"Stato là phần đứng yên tạo từ trường, Roto là phần quay chuyển động."},{"id":"nb-13","code":"NB-13","level":"biet","topic":"Điện - điện tử","question":"Nhược điểm lớn nhất của bóng đèn sợi đốt là gì?","options":["Tiêu thụ nhiều điện năng và tỏa nhiều nhiệt","Hiệu quả chiếu sáng thấp (phần lớn điện năng biến thành nhiệt năng)","Tuổi thọ thấp (khoảng 1.000 giờ)","Cả 3 nhược điểm trên"],"correctIndex":3,"explanation":"Đèn sợi đốt tiêu thụ nhiều điện, phần lớn biến thành nhiệt nên hiệu suất phát sáng thấp và tuổi thọ ngắn."},{"id":"nb-14","code":"NB-14","level":"biet","topic":"Điện - điện tử","question":"Đâu là các nguồn năng lượng chính được dùng để sản xuất điện năng phổ biến?","options":["Thủy điện (năng lượng nước)","Nhiệt điện (than, dầu, khí)","Điện hạt nhân, điện mặt trời, điện gió","Tất cả các nguồn năng lượng trên"],"correctIndex":3,"explanation":"Các công nghệ sản xuất điện năng gồm: thủy điện, nhiệt điện, điện hạt nhân, điện mặt trời, điện gió,..."},{"id":"nb-15","code":"NB-15","level":"biet","topic":"Điện - điện tử","question":"Trong lĩnh vực điện - điện tử, sách giáo khoa đề cập đến mấy công nghệ phổ biến?","options":["3 công nghệ","4 công nghệ","5 công nghệ","6 công nghệ"],"correctIndex":2,"explanation":"Có 5 công nghệ: 1. Sản xuất điện năng, 2. Điện - quang, 3. Điện - cơ, 4. Điều khiển và tự động hóa, 5. Truyền thông không dây."},{"id":"nb-16","code":"NB-16","level":"biet","topic":"Luyện kim, cơ khí","question":"Sản phẩm nào sau đây là sản phẩm của công nghệ luyện kim đen?","options":["Gang và thép","Nhôm và đồng","Vàng và bạc","Chì và kẽm"],"correctIndex":0,"explanation":"Luyện kim đen tạo ra gang và thép (hợp kim của sắt và cacbon)."},{"id":"nb-17","code":"NB-17","level":"biet","topic":"Luyện kim, cơ khí","question":"Sản phẩm nào sau đây là sản phẩm của công nghệ luyện kim màu?","options":["Gang trắng","Thép xây dựng","Nhôm, đồng, kẽm, chì","Gang xám"],"correctIndex":2,"explanation":"Luyện kim màu tạo ra các kim loại và hợp kim không chứa sắt làm thành phần chủ yếu như nhôm, đồng, vàng, kẽm,..."},{"id":"nb-18","code":"NB-18","level":"biet","topic":"Luyện kim, cơ khí","question":"Công nghệ đúc kim loại được chia thành các loại phổ biến nào?","options":["Đúc trong khuôn cát, khuôn kim loại","Đúc ly tâm","Đúc áp lực, đúc khuôn mẫu nóng chảy","Cả 3 nhóm phương pháp trên"],"correctIndex":3,"explanation":"SGK nêu các loại: đúc trong khuôn cát, khuôn kim loại, đúc ly tâm, đúc áp lực, đúc khuôn mẫu nóng chảy."},{"id":"nb-19","code":"NB-19","level":"biet","topic":"Luyện kim, cơ khí","question":"Các phương pháp gia công cắt gọt kim loại truyền thống bao gồm:","options":["Tiện, phay, bào, mài, khoan","Cán, kéo, rèn, dập","Hàn hồ quang, hàn hơi","Đúc khuôn cát, đúc ly tâm"],"correctIndex":0,"explanation":"Gia công cắt gọt bao gồm: tiện, phay, bào, mài, khoan, gia công bằng tia lửa điện, laser,..."},{"id":"nb-20","code":"NB-20","level":"biet","topic":"Luyện kim, cơ khí","question":"Những công nghệ nào sau đây thuộc công nghệ gia công áp lực?","options":["Tiện, phay, khoan","Cán, kéo, rèn và dập","Hàn hồ quang, hàn TIG","Đúc áp lực, đúc khuôn kim loại"],"correctIndex":1,"explanation":"Những công nghệ gia công áp lực tiêu biểu gồm: Cán, kéo, rèn và dập."},{"id":"nb-21","code":"NB-21","level":"biet","topic":"Luyện kim, cơ khí","question":"Căn cứ theo trạng thái kim loại mối hàn khi tiến hành nung nóng, công nghệ hàn chia làm 2 nhóm là:","options":["Hàn nóng chảy và hàn áp lực","Hàn điện và hàn hóa học","Hàn kim loại và hàn phi kim","Hàn thủ công và hàn tự động"],"correctIndex":0,"explanation":"Công nghệ hàn chia thành: Hàn nóng chảy (chỗ hàn và que hàn nóng chảy) và Hàn áp lực (nung dẻo rồi ép lực)."},{"id":"nb-22","code":"NB-22","level":"biet","topic":"Điện - điện tử","question":"Đèn sợi đốt đầu tiên được nhà khoa học Thomas Edison phát minh vào năm nào?","options":["Năm 1835","Năm 1879","Năm 1934","Năm 2006"],"correctIndex":1,"explanation":"Theo mốc thời gian SGK Công nghệ 10: Đèn sợi đốt ra đời năm 1879."},{"id":"nb-23","code":"NB-23","level":"biet","topic":"Điện - điện tử","question":"Đèn phóng điện (đèn huỳnh quang) được phát minh và bắt đầu phát triển từ năm nào?","options":["Năm 1879","Năm 1934","Năm 1986","Năm 2006"],"correctIndex":1,"explanation":"Đèn huỳnh quang (phóng điện) phát triển vào mốc năm 1934."},{"id":"nb-24","code":"NB-24","level":"biet","topic":"Điện - điện tử","question":"Công nghệ đèn LED chiếu sáng hiện đại bắt đầu bùng nổ và ứng dụng rộng rãi từ mốc năm nào?","options":["Năm 1879","Năm 1934","Năm 1975","Năm 2006"],"correctIndex":3,"explanation":"Theo dòng thời gian công nghệ điện - quang trong SGK: Đèn LED đánh dấu bước phát triển vượt bậc năm 2006."},{"id":"nb-25","code":"NB-25","level":"biet","topic":"Điện - điện tử","question":"Rơ le điện (Relay) được sáng chế bởi nhà khoa học Joseph Henry vào năm nào?","options":["Năm 1835","Năm 1879","Năm 1934","Năm 2000"],"correctIndex":0,"explanation":"Theo mục thông tin bổ sung: Rơ le được sáng chế vào năm 1835 bởi nhà khoa học người Mỹ Joseph Henry."},{"id":"nb-26","code":"NB-26","level":"biet","topic":"Điện - điện tử","question":"Thiết bị nào sau đây là công tắc điện sử dụng nguồn điện áp thấp để điều khiển mạch điện áp cao?","options":["Động cơ điện xoay chiều","Máy phát điện xoay chiều","Rơ le (Relay)","Bóng đèn huỳnh quang"],"correctIndex":2,"explanation":"Rơ le là một công tắc điện sử dụng nguồn điện áp thấp để điều khiển mạch điện áp cao nhằm mục đích tự động hóa."},{"id":"nb-27","code":"NB-27","level":"biet","topic":"Điện - điện tử","question":"Theo dạng chuyển động đầu ra, công nghệ biến đổi năng lượng điện - cơ được chia thành 2 nhóm là:","options":["Dạng quay và dạng tịnh tiến","Dạng lắc và dạng rung","Dạng sóng và dạng xung","Dạng xoay chiều và một chiều"],"correctIndex":0,"explanation":"Công nghệ biến đổi điện - cơ chia thành 2 nhóm: Dạng quay (động cơ điện) và Dạng tịnh tiến (van điện từ, rơ le)."},{"id":"nb-28","code":"NB-28","level":"biet","topic":"Điện - điện tử","question":"Thiết bị điện nào sau đây thuộc nhóm công nghệ điện - cơ dạng quay?","options":["Quạt điện","Van điện từ","Rơ le điện","Bóng đèn huỳnh quang"],"correctIndex":0,"explanation":"Quạt điện biến đổi điện năng thành cơ năng chuyển động quay của trục và cánh quạt."},{"id":"nb-29","code":"NB-29","level":"biet","topic":"Điện - điện tử","question":"Thiết bị điện nào sau đây thuộc nhóm công nghệ điện - cơ dạng tịnh tiến?","options":["Máy sấy tóc","Máy xay sinh tố","Van điện từ","Máy bơm nước"],"correctIndex":2,"explanation":"Van điện từ (solenoid valve) và rơ le thuộc nhóm điện - cơ chuyển động tịnh tiến."},{"id":"nb-30","code":"NB-30","level":"biet","topic":"Điện - điện tử","question":"Các công nghệ truyền thông không dây phổ biến hiện nay bao gồm:","options":["Wi-Fi, Bluetooth, mạng di động","Cáp đồng trục, cáp quang","Đường dây điện thoại bàn","Cáp mạng LAN xoắn đôi"],"correctIndex":0,"explanation":"Truyền thông không dây bao gồm: công nghệ Wi-Fi, Bluetooth và mạng di động (3G, 4G, 5G,...)."},{"id":"nb-31","code":"NB-31","level":"biet","topic":"Luyện kim, cơ khí","question":"Kĩ sư luyện kim là người tốt nghiệp đại học chuyên ngành gì?","options":["Kĩ thuật vật liệu kim loại","Kĩ thuật điện lạnh","Kĩ thuật hóa mỹ phẩm","Kĩ thuật lâm sinh"],"correctIndex":0,"explanation":"Kĩ sư luyện kim tốt nghiệp trường đại học kĩ thuật ngành Kĩ thuật vật liệu kim loại."},{"id":"nb-32","code":"NB-32","level":"biet","topic":"Luyện kim, cơ khí","question":"Phương pháp gia công nào cho phép chế tạo chi tiết có độ chính xác và độ nhẵn bóng bề mặt cao nhất?","options":["Đúc khuôn cát thô","Gia công cắt gọt","Rèn tự do","Hàn tay"],"correctIndex":1,"explanation":"Gia công cắt gọt (tiện, phay, mài,...) giúp chi tiết máy đạt kích thước chính xác và độ nhẵn bóng bề mặt cao."},{"id":"nb-33","code":"NB-33","level":"biet","topic":"Luyện kim, cơ khí","question":"Phương pháp nào sau đây làm cho phôi kim loại đi qua khe hở giữa hai trục quay ngược chiều nhau?","options":["Kéo kim loại","Cán kim loại","Rèn khuôn","Dập vuốt"],"correctIndex":1,"explanation":"Cán là cho phôi đi qua khe hở giữa hai trục cán quay ngược chiều nhau, làm giảm chiều dày và tăng chiều dài của phôi."},{"id":"nb-34","code":"NB-34","level":"biet","topic":"Luyện kim, cơ khí","question":"Phương pháp làm phôi kéo dài đi qua lỗ khuôn để tạo sản phẩm dạng thỏi hoặc ống có chiều dài tùy ý là:","options":["Cán kim loại","Kéo kim loại","Gia công phay","Đúc áp lực"],"correctIndex":1,"explanation":"Kéo kim loại là sự kéo dài phôi qua lỗ khuôn kéo để chế tạo sản phẩm thỏi, dây, ống có chiều dài liên tục."},{"id":"nb-35","code":"NB-35","level":"biet","topic":"Điện - điện tử","question":"Công nghệ điều khiển và tự động hóa có vai trò chính là gì trong các nhà máy hiện đại?","options":["Thay thế hoàn toàn kim loại bằng gỗ","Thay thế thao tác con người bằng máy móc, robot giúp tăng năng suất và giảm chi phí","Chỉ dùng để trang trí nhà xưởng","Tạo ra nguồn quặng kim loại mới"],"correctIndex":1,"explanation":"Điều khiển và tự động hóa giúp thay thế các thao tác con người bằng máy móc, robot tự động, nâng cao năng suất và chất lượng."},{"id":"nb-36","code":"NB-36","level":"biet","topic":"Điện - điện tử","question":"Công nghệ truyền thông không dây truyền tải thông tin dựa vào môi trường nào?","options":["Dây cáp quang","Dây cáp kim loại","Sóng điện từ trong không gian","Đường ống dẫn nước áp lực"],"correctIndex":2,"explanation":"Truyền thông không dây sử dụng sóng điện từ lan truyền trong không gian để truyền tải thông tin mà không cần dây dẫn."},{"id":"nb-37","code":"NB-37","level":"biet","topic":"Điện - điện tử","question":"Chữ viết tắt LED bắt nguồn từ thuật ngữ tiếng Anh nào?","options":["Light Emitting Diode","Low Energy Device","Laser Electron Detector","Linear Electric Drive"],"correctIndex":0,"explanation":"LED viết tắt từ \"Light Emitting Diode\" (Diode phát quang)."},{"id":"nb-38","code":"NB-38","level":"biet","topic":"Luyện kim, cơ khí","question":"Trong máy tiện kim loại, chuyển động quay tròn của phôi gọi là:","options":["Chuyển động chính (cắt gọt)","Chuyển động tịnh tiến phụ","Chuyển động tiến dao","Chuyển động nâng hạ"],"correctIndex":0,"explanation":"Trong tiện, chuyển động quay tròn của phôi là chuyển động cắt chính, dao chuyển động tịnh tiến tạo phoi."},{"id":"nb-39","code":"NB-39","level":"biet","topic":"Điện - điện tử","question":"Công nghệ truyền tải và phân phối điện năng có chức năng gì?","options":["Đưa điện năng từ nhà máy sản xuất điện đến nơi tiêu thụ của người sử dụng","Tạo ra dòng điện từ nước","Nấu chảy kim loại","Chế tạo các linh kiện rơ le"],"correctIndex":0,"explanation":"Để phân phối điện năng từ nhà máy sản xuất đến nơi tiêu thụ, người ta dùng công nghệ truyền tải và phân phối điện năng."},{"id":"nb-40","code":"NB-40","level":"biet","topic":"Nghề nghiệp & Đời sống","question":"Người làm nghề đúc kim loại thường tốt nghiệp bậc học nào ngành công nghệ đúc kim loại?","options":["Sơ cấp, trung cấp hoặc cao đẳng nghề","Bác sĩ đa khoa","Thạc sĩ nông nghiệp","Cử nhân sư phạm văn"],"correctIndex":0,"explanation":"Người làm nghề đúc kim loại tốt nghiệp cao đẳng hoặc trung cấp ngành công nghệ đúc kim loại."},{"id":"th-01","code":"TH-01","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ thứ nhất trong lĩnh vực điện – điện tử được đề cập trong bài học là:","options":["Công nghệ sản xuất điện năng","Công nghệ điện – quang","Công nghệ điện – cơ","Công nghệ điều khiển và tự động hóa"],"correctIndex":0,"explanation":"Thứ tự trong SGK: 1. Công nghệ sản xuất điện năng, 2. Điện – quang, 3. Điện – cơ, 4. Điều khiển và tự động hóa, 5. Truyền thông không dây."},{"id":"th-02","code":"TH-02","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ thứ hai trong lĩnh vực điện – điện tử được đề cập trong bài học là:","options":["Công nghệ điện – quang","Công nghệ điện – cơ","Công nghệ điều khiển và tự động hóa","Công nghệ truyền thông không dây"],"correctIndex":0,"explanation":"Công nghệ thứ 2 trong mục II là công nghệ điện - quang."},{"id":"th-03","code":"TH-03","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ thứ ba trong lĩnh vực điện – điện tử được đề cập trong bài học là:","options":["Công nghệ sản xuất điện năng","Công nghệ điện – cơ","Công nghệ điện – quang","Công nghệ truyền thông không dây"],"correctIndex":1,"explanation":"Công nghệ thứ 3 trong mục II là công nghệ điện - cơ."},{"id":"th-04","code":"TH-04","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ thứ tư trong lĩnh vực điện – điện tử được đề cập trong bài học là:","options":["Công nghệ sản xuất điện năng","Công nghệ điều khiển và tự động hóa","Công nghệ điện – quang","Công nghệ điện – cơ"],"correctIndex":1,"explanation":"Công nghệ thứ 4 trong mục II là công nghệ điều khiển và tự động hóa."},{"id":"th-05","code":"TH-05","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ thứ năm trong lĩnh vực điện – điện tử được đề cập trong bài học là:","options":["Công nghệ điện – cơ","Công nghệ điện – quang","Công nghệ truyền thông không dây","Công nghệ gia công cắt gọt"],"correctIndex":2,"explanation":"Công nghệ thứ 5 trong mục II là công nghệ truyền thông không dây."},{"id":"th-06","code":"TH-06","level":"hieu","topic":"Luyện kim, cơ khí","question":"Công nghệ đầu tiên trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là:","options":["Công nghệ luyện kim","Công nghệ đúc","Công nghệ gia công cắt gọt","Công nghệ hàn"],"correctIndex":0,"explanation":"Thứ tự trong SGK: 1. Công nghệ luyện kim, 2. Đúc, 3. Gia công cắt gọt, 4. Gia công áp lực, 5. Hàn."},{"id":"th-07","code":"TH-07","level":"hieu","topic":"Luyện kim, cơ khí","question":"Công nghệ thứ hai trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là:","options":["Công nghệ đúc kim loại","Công nghệ luyện kim","Công nghệ gia công cắt gọt","Công nghệ gia công áp lực"],"correctIndex":0,"explanation":"Công nghệ thứ 2 trong lĩnh vực cơ khí luyện kim là công nghệ đúc."},{"id":"th-08","code":"TH-08","level":"hieu","topic":"Luyện kim, cơ khí","question":"Công nghệ thứ ba trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là:","options":["Công nghệ gia công áp lực","Công nghệ đúc","Công nghệ luyện kim","Công nghệ gia công cắt gọt"],"correctIndex":3,"explanation":"Công nghệ thứ 3 là công nghệ gia công cắt gọt."},{"id":"th-09","code":"TH-09","level":"hieu","topic":"Luyện kim, cơ khí","question":"Công nghệ thứ tư trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là:","options":["Công nghệ gia công áp lực","Công nghệ hàn","Công nghệ đúc","Công nghệ luyện kim"],"correctIndex":0,"explanation":"Công nghệ thứ 4 là công nghệ gia công áp lực (cán, kéo, rèn, dập)."},{"id":"th-10","code":"TH-10","level":"hieu","topic":"Luyện kim, cơ khí","question":"Công nghệ thứ năm trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là:","options":["Công nghệ hàn","Công nghệ đúc","Công nghệ tiện phay","Công nghệ cán kéo"],"correctIndex":0,"explanation":"Công nghệ thứ 5 trong mục I là công nghệ hàn kim loại."},{"id":"th-11","code":"TH-11","level":"hieu","topic":"Luyện kim, cơ khí","question":"Vì sao sau khi đúc kim loại, nhiều sản phẩm vẫn cần trải qua gia công cắt gọt?","options":["Để tăng trọng lượng cho sản phẩm","Để nâng cao độ chính xác kích thước và độ bóng bề mặt của chi tiết","Để làm biến dạng nguội kim loại","Để sản phẩm có thể dẫn điện tốt hơn"],"correctIndex":1,"explanation":"Sản phẩm đúc thô gọi là phôi đúc, cần gia công cắt gọt để đạt độ chính xác cao và độ nhẵn bóng theo bản vẽ thiết kế."},{"id":"th-12","code":"TH-12","level":"hieu","topic":"Luyện kim, cơ khí","question":"Điểm khác biệt cốt lõi giữa \"Gia công cắt gọt\" và \"Gia công áp lực\" là gì?","options":["Cắt gọt sinh ra phoi thừa bỏ đi, còn gia công áp lực tận dụng tính dẻo biến dạng không sinh phoi","Cắt gọt dùng kim loại lỏng, gia công áp lực dùng kim loại rắn","Cắt gọt chỉ làm được với nhôm, gia công áp lực chỉ làm được với sắt","Gia công áp lực không dùng đến máy móc"],"correctIndex":0,"explanation":"Gia công cắt gọt lấy đi phần kim loại thừa dưới dạng phoi; còn gia công áp lực dùng lực biến dạng dẻo kim loại thành hình dáng mong muốn mà không tách bỏ phoi."},{"id":"th-13","code":"TH-13","level":"hieu","topic":"Điện - điện tử","question":"Vì sao đèn LED tiết kiệm điện năng hơn rất nhiều so với đèn sợi đốt?","options":["Vì đèn LED đốt cháy khí trơ phát quang","Vì đèn LED chuyển hóa trực tiếp điện năng thành quang năng qua diode mà không sinh nhiều nhiệt lượng dư thừa","Vì đèn LED sử dụng dòng điện áp siêu cao","Vì đèn LED có vỏ bằng thủy tinh dày hơn"],"correctIndex":1,"explanation":"Đèn sợi đốt nung nóng dây tóc phát sáng nên 90-95% năng lượng tỏa nhiệt; đèn LED chuyển trực tiếp điện năng thành quang năng qua chất bán dẫn nên hiệu suất rất cao."},{"id":"th-14","code":"TH-14","level":"hieu","topic":"Luyện kim, cơ khí","question":"Trong phương pháp đúc ly tâm, lực ly tâm có tác dụng gì đối với kim loại lỏng?","options":["Làm kim loại bay hơi nhanh hơn","Đẩy kim loại lỏng ép chặt vào thành khuôn quay tròn giúp tạo sản phẩm rỗng ruột đồng đều (như ống đúc)","Làm nguội kim loại tức thì","Ngăn không cho kim loại kết tinh"],"correctIndex":1,"explanation":"Đúc ly tâm rót kim loại lỏng vào khuôn đang quay nhanh, lực ly tâm ép kim loại lỏng ra thành ngoài tạo thành vật đúc dạng ống rỗng ruột sít chặt."},{"id":"th-15","code":"TH-15","level":"hieu","topic":"Luyện kim, cơ khí","question":"Phân biệt giữa hàn nóng chảy và hàn áp lực:","options":["Hàn nóng chảy nung mép kim loại đến chảy lỏng hoàn toàn; hàn áp lực nung dẻo rồi dùng ngoại lực ép dính","Hàn nóng chảy không cần que hàn, hàn áp lực luôn dùng que hàn","Hàn nóng chảy chỉ dùng cho gỗ, hàn áp lực dùng cho sắt thép","Hàn nóng chảy làm lạnh bằng nước, hàn áp lực làm nóng bằng lò sưởi"],"correctIndex":0,"explanation":"Hàn nóng chảy nung chỗ hàn đến trạng thái lỏng; còn hàn áp lực nung nóng đến trạng thái dẻo rồi dùng ngoại lực ép lại."},{"id":"th-16","code":"TH-16","level":"hieu","topic":"Điện - điện tử","question":"Nguyên lý cơ bản biến đổi điện năng thành cơ năng trong động cơ điện dựa trên:","options":["Hiện tượng tán sắc ánh sáng","Hiện tượng cảm ứng điện từ (tương tác giữa từ trường của stato và dòng điện trong roto)","Hiện tượng ma sát tĩnh điện","Hiện tượng phân rã hạt nhân"],"correctIndex":1,"explanation":"Động cơ điện hoạt động dựa trên hiện tượng cảm ứng điện từ, khi dòng điện qua cuộn dây đặt trong từ trường sẽ sinh ra lực từ làm roto quay."},{"id":"th-17","code":"TH-17","level":"hieu","topic":"Điện - điện tử","question":"Máy sấy tóc thuộc loại thiết bị điện - cơ nào?","options":["Thiết bị điện - cơ dạng tịnh tiến","Thiết bị điện - cơ dạng quay (động cơ điện quay cánh quạt thổi gió qua cuộn dây nhiệt)","Thiết bị điện - quang thuần túy","Thiết bị truyền thông không dây"],"correctIndex":1,"explanation":"Máy sấy tóc gồm một động cơ điện quay gắn cánh quạt hút và đẩy luồng không khí qua sợi đốt."},{"id":"th-18","code":"TH-18","level":"hieu","topic":"Điện - điện tử","question":"Tại sao van điện từ (solenoid) lại được xếp vào nhóm điện - cơ dạng tịnh tiến?","options":["Vì van chuyển động xoay tròn liên tục 360 độ","Vì khi có điện, cuộn dây tạo từ trường hút lõi thép di chuyển dọc trục tịnh tiến để đóng/mở cửa van","Vì van phát ra ánh sáng huỳnh quang","Vì van truyền sóng Wi-Fi"],"correctIndex":1,"explanation":"Lực từ trường tác dụng kéo hoặc đẩy lõi van chuyển động thẳng tới lui (tịnh tiến) để đóng hoặc mở đường dẫn chất lỏng/khí."},{"id":"th-19","code":"TH-19","level":"hieu","topic":"Điện - điện tử","question":"Nhà máy thủy điện biến đổi năng lượng theo chu trình nào?","options":["Nhiệt năng của than -> cơ năng -> điện năng","Thế năng (và động năng) của dòng nước chảy -> cơ năng quay tua-bin -> máy phát điện tạo điện năng","Năng lượng ánh sáng -> pin quang điện -> điện năng","Năng lượng gió -> điện phân nước -> điện năng"],"correctIndex":1,"explanation":"Nước từ hồ chứa trên cao chảy xuống làm quay tuabin nước, tuabin kéo máy phát điện quay sinh ra dòng điện."},{"id":"th-20","code":"TH-20","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ hàn hồ quang MAG (Metal Active Gas) là công nghệ hàn trong môi trường khí gì?","options":["Khí bảo vệ hoạt tính (thường là CO2 hoặc trộn Ar + CO2)","Khí oxi nguyên chất","Khí hidro cháy","Khí heli không màu"],"correctIndex":0,"explanation":"MAG là hàn hồ quang kim loại trong môi trường khí bảo vệ hoạt tính (Active Gas), phổ biến nhất là khí CO2 để bảo vệ mối hàn khỏi oxi hóa."},{"id":"th-21","code":"TH-21","level":"hieu","topic":"Luyện kim, cơ khí","question":"Điểm khác biệt giữa cán nóng và cán nguội trong công nghệ cán kim loại là:","options":["Cán nóng thực hiện khi kim loại được nung trên nhiệt độ kết tinh lại, cán nguội thực hiện ở nhiệt độ phòng","Cán nóng chỉ làm việc với nhôm, cán nguội chỉ làm việc với vàng","Cán nóng không dùng trục quay, cán nguội dùng 4 trục","Cán nguội làm kim loại chảy thành nước"],"correctIndex":0,"explanation":"Cán nóng biến dạng kim loại ở nhiệt độ cao (giảm lực cán), cán nguội thực hiện ở nhiệt độ thấp cho độ chính xác và bề mặt sáng bóng."},{"id":"th-22","code":"TH-22","level":"hieu","topic":"Điện - điện tử","question":"Nguyên lý phát sáng của đèn huỳnh quang (phóng điện) là gì?","options":["Đốt nóng sợi vonfram đến nhiệt độ phát quang","Phóng điện giữa 2 điện cực trong hơi thủy ngân tạo tia tử ngoại, kích thích lớp bột huỳnh quang phát ra ánh sáng nhìn thấy","Dòng điện đi qua lớp bán dẫn p-n","Phản ứng cháy của phốt pho với không khí"],"correctIndex":1,"explanation":"Khi điện áp đặt vào hai cực, phóng điện xảy ra tạo tia tử ngoại tác dụng vào lớp bột huỳnh quang phủ trong ống thủy tinh phát ra ánh sáng."},{"id":"th-23","code":"TH-23","level":"hieu","topic":"Luyện kim, cơ khí","question":"Trong các công nghệ sau, công nghệ nào tạo ra phế phẩm dưới dạng \"bavia\" hoặc \"phoi cắt\"?","options":["Gia công cắt gọt kim loại","Công nghệ truyền tải điện","Công nghệ sản xuất điện gió","Công nghệ chiếu sáng LED"],"correctIndex":0,"explanation":"Gia công cắt gọt bóc tách lớp vật liệu thừa trên phôi kim loại tạo thành các phoi cắt (phoi vụn, phoi dây,...)."},{"id":"th-24","code":"TH-24","level":"hieu","topic":"Điện - điện tử","question":"Sự khác nhau về phạm vi truyền sóng giữa Bluetooth và Wi-Fi là:","options":["Bluetooth truyền khoảng cách ngắn (thường dưới 10m - 15m), Wi-Fi phủ sóng rộng hơn (vài chục đến hàng trăm mét) và tốc độ cao hơn","Bluetooth truyền hàng nghìn kilomet, Wi-Fi chỉ truyền trong phòng ngủ","Bluetooth dùng dây cáp quang, Wi-Fi dùng vệ tinh","Bluetooth không dùng sóng vô tuyến"],"correctIndex":0,"explanation":"Bluetooth thiết kế kết nối các thiết bị cá nhân ở khoảng cách gần, Wi-Fi dùng mạng cục bộ không dây phạm vi rộng hơn và lưu lượng lớn."},{"id":"th-25","code":"TH-25","level":"hieu","topic":"Điện - điện tử","question":"Tại sao việc tự động hóa dây chuyền lắp ráp ô tô bằng robot lại mang lại hiệu quả vượt trội?","options":["Robot làm việc liên tục, độ chuẩn xác đồng đều cao, đảm bảo an toàn trong môi trường độc hại nặng nhọc","Robot không cần cung cấp điện năng khi vận hành","Robot tự sinh ra sắt thép để làm vỏ xe","Robot chỉ có thể sơn màu trắng"],"correctIndex":0,"explanation":"Dây chuyền tự động hóa giúp các thao tác con người được thay thế bằng cánh tay robot, tăng năng suất, giảm chi phí nhân công và an toàn tuyệt đối."},{"id":"th-26","code":"TH-26","level":"hieu","topic":"Luyện kim, cơ khí","question":"Hình thức \"Rèn\" trong gia công áp lực được chia thành 2 hình thức chính là:","options":["Rèn tự do và rèn khuôn (dập thể tích)","Rèn nóng và rèn bằng laser","Rèn bằng tay và rèn trong nước","Rèn điện và rèn hóa"],"correctIndex":0,"explanation":"Rèn chia thành rèn tự do (biến dạng không bị hạn chế bởi lòng khuôn) và rèn khuôn (dập trong lòng khuôn định hình sẵn)."},{"id":"th-27","code":"TH-27","level":"hieu","topic":"Điện - điện tử","question":"Công nghệ truyền tải điện năng đi xa dùng điện áp rất cao (đường dây cao thế 500kV, 220kV) nhằm mục đích chính là:","options":["Giảm hao phí do tỏa nhiệt trên đường dây truyền tải điện","Làm dây điện phát sáng ban đêm","Tăng điện trở của dây dẫn","Làm giảm tốc độ lan truyền của dòng điện"],"correctIndex":0,"explanation":"Hao phí trên đường dây tỉ lệ nghịch với bình phương hiệu điện thế (P_hp = R * P^2 / U^2). Nâng U lên cao sẽ giảm hao phí truyền tải rất nhiều."},{"id":"th-28","code":"TH-28","level":"hieu","topic":"Luyện kim, cơ khí","question":"Hạn chế lớn nhất của công nghệ đúc trong khuôn cát là gì so với đúc trong khuôn kim loại?","options":["Độ bóng bề mặt và độ chính xác kích thước thấp hơn, khuôn chỉ dùng được 1 lần (phải phá vỡ sau đúc)","Không thể đúc các chi tiết lớn","Nhiệt độ nóng chảy của cát quá thấp","Chi phí cát đắt hơn kim loại"],"correctIndex":0,"explanation":"Đúc khuôn cát có ưu điểm đúc được chi tiết lớn phức tạp nhưng bề mặt thô nhám, độ chính xác không cao và khuôn bị phá hủy sau khi lấy vật đúc."},{"id":"th-29","code":"TH-29","level":"hieu","topic":"Luyện kim, cơ khí","question":"Trong các sản phẩm sau, sản phẩm nào được chế tạo trực tiếp bằng công nghệ hàn?","options":["Cổng sắt hoa văn, giàn giáo xây dựng, khung nhà thép tiền chế","Thanh ray đường sắt đúc nguyên khối","Lưỡi cưa gỗ dập nổi","Bóng đèn compact"],"correctIndex":0,"explanation":"Cổng sắt hoa văn, bàn ghế sắt, giàn giáo xây dựng, khung thép nhà máy được liên kết chắc chắn bằng công nghệ hàn."},{"id":"th-30","code":"TH-30","level":"hieu","topic":"Nghề nghiệp & Đời sống","question":"Kĩ sư mạng máy tính và truyền thông dữ liệu đảm nhận công việc chính nào?","options":["Nghiên cứu nguyên lí mạng, thiết kế, xây dựng và quản trị hệ thống mạng từ nội bộ đến diện rộng","Nấu quặng sắt trong lò cao","Hàn ống nước ngầm bằng khí MAG","Tiện ren ốc trên máy tiện cơ khí"],"correctIndex":0,"explanation":"Kĩ sư mạng máy tính thiết kế, xây dựng và vận hành hệ thống mạng máy tính từ mạng nội bộ (LAN) đến mạng diện rộng (WAN, Internet)."},{"id":"vd-01","code":"VD-01","level":"van_dung","topic":"Điện - điện tử","question":"Để lắp đặt hệ thống đèn chiếu sáng cho một trường học nhằm tối ưu hóa chi phí tiền điện lâu dài và bảo vệ thị lực cho học sinh, loại đèn nào là lựa chọn tốt nhất?","options":["Đèn LED hiện đại","Đèn sợi đốt Edison","Đèn dầu hỏa","Đèn khí cacbon"],"correctIndex":0,"explanation":"Đèn LED tiết kiệm tới 60-80% điện năng so với sợi đốt, phát sáng êm dịu, không nhấp nháy tần số thấp, tuổi thọ bền bỉ từ 30.000 đến 50.000 giờ."},{"id":"vd-02","code":"VD-02","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để sản xuất hàng loạt thân động cơ xe máy hoặc vỏ hộp số ô tô có hình dạng rỗng và gân gia cường phức tạp, người ta ưu tiên sử dụng công nghệ nào đầu tiên để tạo phôi?","options":["Công nghệ đúc kim loại (đúc áp lực hoặc đúc khuôn kim loại)","Công nghệ hàn que","Công nghệ kéo sợi","Công nghệ rèn tự do bằng tay"],"correctIndex":0,"explanation":"Công nghệ đúc kim loại (đặc biệt đúc áp lực khuôn kim loại) là lựa chọn tối ưu để tạo các chi tiết phức tạp như vỏ máy, lốc động cơ."},{"id":"vd-03","code":"VD-03","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để gia công trục tròn xoay của một máy bơm nước đạt độ tròn và độ bóng bề mặt cao, thợ cơ khí sẽ sử dụng phương pháp gia công cắt gọt nào?","options":["Công nghệ tiện kết hợp mài tinh","Công nghệ hàn nóng chảy","Công nghệ rèn tự do","Công nghệ đúc khuôn cát"],"correctIndex":0,"explanation":"Chi tiết tròn xoay (như trục máy, bu lông) được gia công chủ yếu trên máy tiện, sau đó mài bóng để đạt độ chính xác bề mặt cao."},{"id":"vd-04","code":"VD-04","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để sản xuất dây điện bằng đồng có đường kính nhỏ 1mm và chiều dài hàng trăm mét từ thanh phôi đồng lớn, xí nghiệp phải ứng dụng công nghệ gia công áp lực nào?","options":["Công nghệ kéo kim loại qua lỗ khuôn","Công nghệ hàn hồ quang","Công nghệ phay rãnh xoắn","Công nghệ đúc ly tâm"],"correctIndex":0,"explanation":"Kéo kim loại là sự kéo dài phôi qua chuỗi lỗ khuôn có đường kính nhỏ dần để tạo ra dây kim loại có tiết diện nhỏ và chiều dài không hạn chế."},{"id":"vd-05","code":"VD-05","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Tại sao trong các nhà xưởng cơ khí hiện đại, người ta thường dùng máy hàn MAG có khí CO2 bảo vệ thay cho que hàn thuốc bọc truyền thống khi hàn kết cấu dày?","options":["Mối hàn sạch, ít xỉ, tốc độ hàn nhanh, độ ngấu sâu và năng suất cao hơn hẳn","Hàn MAG không cần nguồn điện","Hàn MAG làm kim loại hóa lỏng ở nhiệt độ âm","Hàn MAG không tạo ra bất kì bức xạ ánh sáng nào"],"correctIndex":0,"explanation":"Hàn MAG trong môi trường khí bảo vệ CO2 cấp dây hàn tự động liên tục, tốc độ hàn cao, mối hàn đẹp, ngấu tốt và ít bám xỉ."},{"id":"vd-06","code":"VD-06","level":"van_dung","topic":"Điện - điện tử","question":"Trong hệ thống bơm nước tự động của gia đình lên bồn nước trên cao, thiết bị điện - cơ nào vừa đóng vai trò cảm ứng ngắt mạch điện khi bồn đầy nước?","options":["Rơ le phao điện (Relay điện từ kết hợp phao ngắt)","Đèn LED tín hiệu","Bóng đèn sợi đốt","Khối nam châm vĩnh cửu"],"correctIndex":0,"explanation":"Rơ le điện từ kết hợp với phao đóng/ngắt mạch điều khiển điện áp an toàn để bật/tắt máy bơm tự động."},{"id":"vd-07","code":"VD-07","level":"van_dung","topic":"Điện - điện tử","question":"Một học sinh muốn nghe nhạc từ điện thoại thông minh sang tai nghe không dây khi đang chạy bộ thể dục. Công nghệ truyền thông không dây phù hợp nhất được tích hợp là:","options":["Công nghệ Bluetooth","Công nghệ cáp truyền hình","Công nghệ mạng cáp quang FTTH","Công nghệ phát sóng vô tuyến AM công suất lớn"],"correctIndex":0,"explanation":"Bluetooth tiêu tốn ít năng lượng, truyền âm thanh ổn định trong khoảng cách ngắn vài mét, rất thích hợp cho tai nghe cá nhân."},{"id":"vd-08","code":"VD-08","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để chế tạo tôn lợp nhà mạ kẽm có độ dày mỏng đều 0.4mm từ phôi thép tấm dày, nhà máy thép cần thực hiện qua quy trình gia công áp lực nào?","options":["Cán nóng rồi cán nguội qua các trục cán","Rèn khuôn bằng búa máy","Đúc áp lực trong khuôn mẫu chảy","Hàn điện tiếp xúc"],"correctIndex":0,"explanation":"Công nghệ cán thép cho phôi đi qua các cặp trục quay ngược chiều nén phôi mỏng dần đến kích thước yêu cầu (tấm lá mỏng)."},{"id":"vd-09","code":"VD-09","level":"van_dung","topic":"Điện - điện tử","question":"Quan sát các thiết bị gia dụng: (1) Quạt bàn, (2) Máy sấy tóc, (3) Rơ le ngắt nhiệt ấm siêu tốc, (4) Van xả nước tự động của máy giặt. Các thiết bị thuộc nhóm điện - cơ dạng tịnh tiến là:","options":["(3) và (4)","(1) và (2)","(1) và (3)","(2) và (4)"],"correctIndex":0,"explanation":"Quạt bàn và máy sấy tóc là động cơ quay (dạng quay); còn rơ le ngắt nhiệt và van điện từ xả nước chuyển động tịnh tiến lõi sắt (dạng tịnh tiến)."},{"id":"vd-10","code":"VD-10","level":"van_dung","topic":"Điện - điện tử","question":"Khi xây dựng một nhà máy nhiệt điện đốt than, để giảm thiểu ô nhiễm khói bụi và khí độc theo quy chuẩn bảo vệ môi trường, giải pháp kĩ thuật bắt buộc là:","options":["Lắp đặt hệ thống lọc bụi tĩnh điện và tháp xử lý khử khí SO2, NOx trước khi thải ra ống khói","Chôn than trực tiếp xuống lòng đất","Thay nước làm mát bằng dầu nhớt thải","Không dùng ống khói mà xả trực tiếp vào nguồn nước"],"correctIndex":0,"explanation":"Nhiệt điện đốt than sinh nhiều bụi và khí độc, cần trang bị lọc bụi tĩnh điện và tháp hấp phụ khí độc để bảo vệ môi trường sinh thái."},{"id":"vd-11","code":"VD-11","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để tạo một chiếc cổng sắt nghệ thuật với các thanh uốn cong và hoa văn phức tạp ghép nối bền chặt, người thợ kết hợp những công nghệ nào?","options":["Gia công áp lực (uốn rèn tạo hình hoa văn) và Công nghệ hàn (ghép nối cố định)","Công nghệ đúc khuôn cát và mài phẳng","Công nghệ kéo sợi và điện phân","Công nghệ tiện trục và cán tấm"],"correctIndex":0,"explanation":"Người thợ uốn nắn hoa văn sắt bằng gia công áp lực (uốn, dập rèn mỹ thuật) sau đó dùng công nghệ hàn để liên kết thành khung cổng vững chắc."},{"id":"vd-12","code":"VD-12","level":"van_dung","topic":"Điện - điện tử","question":"Tại các vùng đồi núi có địa hình dốc và dòng sông có lưu lượng nước lớn quanh năm, phương thức sản xuất điện năng nào tận dụng tối đa điều kiện tự nhiên?","options":["Công nghệ thủy điện","Công nghệ nhiệt điện khí hóa lỏng","Công nghệ điện hạt nhân","Công nghệ nhiệt điện than"],"correctIndex":0,"explanation":"Địa hình đồi núi dốc tạo cột nước cao và lưu lượng lớn, là điều kiện lý tưởng để xây dựng đập tích nước và nhà máy thủy điện."},{"id":"vd-13","code":"VD-13","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Ống dẫn dầu bằng gang hình trụ dài rỗng ruột với thành ống dày đều và không có đường hàn giáp mí thường được sản xuất bằng phương pháp đúc nào?","options":["Công nghệ đúc ly tâm","Công nghệ đúc mẫu sáp chảy","Công nghệ rèn tay tự do","Công nghệ hàn ghép tấm mỏng"],"correctIndex":0,"explanation":"Đúc ly tâm là phương pháp chuyên dùng sản xuất các ống kim loại tròn rỗng (như ống nước, ống dẫn dầu gang) cho mật độ vật liệu sít chặt và không có mối hàn."},{"id":"vd-14","code":"VD-14","level":"van_dung","topic":"Điện - điện tử","question":"Một nông trại trồng thanh long nghịch vụ cần thắp sáng ban đêm hàng nghìn bóng đèn. Tại sao chuyển đổi từ đèn sợi đốt sang đèn LED chuyên dụng giúp nhà nông tăng lợi nhuận?","options":["Giảm hơn 70% tiền điện mỗi tháng, tuổi thọ bóng lâu năm ít hỏng hóc và bước sóng ánh sáng kích thích ra hoa tối ưu","Đèn LED tạo ra nhiều nhiệt sưởi ấm quả thanh long chín nhanh hơn","Đèn LED không cần dùng điện lưới","Đèn LED phát ra tia phóng xạ diệt sâu bọ"],"correctIndex":0,"explanation":"Đèn LED giúp tiết kiệm đáng kể chi phí tiền điện, bền hơn trước mưa gió ngoài đồng, hiệu quả kinh tế cao vượt trội so với đèn sợi đốt."},{"id":"vd-15","code":"VD-15","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để cắt các tấm thép dày 50mm dùng làm thân tàu thủy với đường cắt hình học uốn lượn phức tạp một cách nhanh chóng, công nghệ gia công hiện đại nào thường được sử dụng?","options":["Cắt bằng tia nước áp lực cao trộn hạt mài hoặc công nghệ cắt Plasma/Laser CNC","Cưa tay bằng lưỡi cưa sắt","Đục bằng búa và đục tay","Khoan lỗ thủ công"],"correctIndex":0,"explanation":"Cắt Plasma CNC, Laser công suất lớn hoặc tia nước áp lực cao cho phép cắt thép tấm dày chính xác theo biên dạng bản vẽ số hóa."},{"id":"vd-16","code":"VD-16","level":"van_dung","topic":"Điện - điện tử","question":"Trong ô tô thông minh, cảm biến lùi phát hiện chướng ngại vật rồi truyền tín hiệu điều khiển kích hoạt hệ thống tự động phanh. Đây là ứng dụng tiêu biểu của:","options":["Công nghệ điều khiển và tự động hóa","Công nghệ luyện kim màu","Công nghệ gia công áp lực","Công nghệ đúc ly tâm"],"correctIndex":0,"explanation":"Hệ thống phanh khẩn cấp tự động là một chuỗi điều khiển tự động hóa khép kín: Cảm biến -> Bộ vi xử lý -> Cơ cấu chấp hành phanh an toàn."},{"id":"vd-17","code":"VD-17","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để nâng cao cơ tính (độ cứng, độ bền mài mòn) của một chiếc bánh răng thép sau khi đã gia công cắt gọt xong, quy trình xử lý nhiệt luyện tiếp theo là:","options":["Nung nóng rồi tôi cứng bề mặt và ram tôi","Ngâm bánh răng vào nước lạnh ngay từ đầu","Cán mỏng bánh răng qua 2 trục quay","Nấu chảy bánh răng đổ vào khuôn cát"],"correctIndex":0,"explanation":"Sau khi gia công răng, bánh răng được nhiệt luyện (tôi cứng và ram) để bề mặt răng cứng chống mài mòn mà lõi vẫn dai chịu tải va đập."},{"id":"vd-18","code":"VD-18","level":"van_dung","topic":"Điện - điện tử","question":"Tại sao mạng di động thế hệ mới 5G lại được xem là chìa khóa mở đường cho xe tự hành (xe không người lái) và phẫu thuật từ xa?","options":["Tốc độ truyền dữ liệu siêu cao và độ trễ cực thấp (dưới 1ms), phản hồi tức thì theo thời gian thực","Sóng 5G biến pin xe điện thành pin vĩnh cửu","5G không cần trạm thu phát sóng trên mặt đất","5G chỉ dùng được vào ban ngày"],"correctIndex":0,"explanation":"Ưu thế then chốt của 5G là băng thông cực lớn và độ trễ phản hồi siêu thấp (ultra-low latency), giúp thiết bị ra quyết định tức thì, bảo đảm an toàn tính mạng."},{"id":"vd-19","code":"VD-19","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Dụng cụ nhà bếp nào sau đây thường được đúc nguyên khối từ gang vì tính giữ nhiệt lâu và chịu nhiệt cao?","options":["Chảo gang, nồi kho tộ bằng gang","Dao gọt hoa quả bằng sứ mỏng","Bình thủy tinh chịu nhiệt","Thìa nhựa ăn dặm"],"correctIndex":0,"explanation":"Nồi chảo gang đúc có độ dày dặn, khả năng tích nhiệt và tỏa nhiệt đều, rất bền bỉ trong nấu nướng."},{"id":"vd-20","code":"VD-20","level":"van_dung","topic":"Điện - điện tử","question":"Một học sinh thiết kế mô hình nhà thông minh có đèn tự động sáng khi trời tối. Học sinh đó cần phối hợp các công nghệ nào?","options":["Cảm biến ánh sáng quang trở + Mạch điều khiển đóng ngắt + Đèn LED chiếu sáng","Lò cao luyện thép + Tua bin gió","Máy cán tôn + Máy tiện vạn năng","Ống đúc ly tâm + Que hàn điện"],"correctIndex":0,"explanation":"Hệ thống gồm cảm biến nhận biết quang năng, mạch tự động hóa xử lý tín hiệu và đèn chiếu sáng công nghệ LED."},{"id":"vd-21","code":"VD-21","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Tại một xưởng sản xuất bu-lông, đai ốc với số lượng hàng vạn chiếc mỗi ngày, người ta dùng phương pháp nào để tạo đầu bu-lông hình lục giác nhanh và tiết kiệm nguyên liệu nhất?","options":["Công nghệ dập nguội (gia công áp lực)","Tiện từng góc cạnh trên máy tiện thủ công","Hàn 6 mảnh sắt nhỏ vào đầu que bu-lông","Đục thủ công bằng búa"],"correctIndex":0,"explanation":"Công nghệ dập đầu nguội (gia công áp lực) ép phôi thép thành đầu lục giác chỉ trong tích tắc, không sinh phoi vụn, năng suất hàng nghìn cái/giờ."},{"id":"vd-22","code":"VD-22","level":"van_dung","topic":"Điện - điện tử","question":"Để đo lường hiệu quả năng lượng của bóng đèn trong thực tế, chỉ tiêu kĩ thuật nào thể hiện rõ nhất tỷ số giữa quang thông phát ra trên một đơn vị công suất điện tiêu thụ?","options":["Hiệu suất phát quang (Lumen/Watt - lm/W)","Khối lượng bóng đèn (gam)","Điện trở cuộn dây (Ohm)","Đường kính đui đèn (mm)"],"correctIndex":0,"explanation":"Hiệu suất phát quang (lm/W) cho biết với 1 Watt điện năng tiêu thụ, đèn tạo ra được bao nhiêu quang thông ánh sáng. Đèn LED đạt hiệu suất lm/W cao nhất."},{"id":"vd-23","code":"VD-23","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Khi hàn nối hai tấm thép chịu lực của bồn chứa khí hóa lỏng áp lực cao, thợ hàn cần kiểm tra khuyết tật mối hàn bên trong bằng phương pháp không phá hủy nào?","options":["Chiếu chụp tia X (chụp X-quang) hoặc siêu âm mối hàn","Dùng búa đập vỡ xem bên trong","Ngửi mùi khí xung quanh bồn","Cân trọng lượng của cả bồn"],"correctIndex":0,"explanation":"Kiểm tra không phá hủy (NDT) bằng sóng siêu âm hoặc chụp ảnh phóng xạ tia X giúp phát hiện bọt khí, nứt ngầm bên trong mối hàn mà không làm hỏng kết cấu."},{"id":"vd-24","code":"VD-24","level":"van_dung","topic":"Điện - điện tử","question":"Một trạm biến áp trung gian ở khu dân cư có tiếng kêu \"u u\" liên tục khi vận hành. Hiện tượng này chủ yếu bắt nguồn từ nguyên nhân cơ học nào bên trong máy biến áp?","options":["Hiện tượng từ giảo (lõi thép silic co dãn nhẹ theo chu kì của từ trường xoay chiều 50Hz)","Gió thổi qua các dây dẫn","Nước rò rỉ trong bình dầu","Bóng đèn trang trí nhấp nháy"],"correctIndex":0,"explanation":"Dưới tác dụng của từ trường biến thiên 50Hz, các lá thép kĩ thuật điện trong lõi từ biến dạng đàn hồi vi mô (hiện tượng từ giảo) gây rung động phát ra âm thanh tần số 100Hz."},{"id":"vd-25","code":"VD-25","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Trong quy trình đúc chuông đồng lớn của các làng nghề truyền thống (như Ngũ Xã, Huế), vì sao thợ đúc phải dùng khuôn đất sét trộn rơm và trấu mịn?","options":["Tăng độ xốp thoáng khí giúp khí thoát ra ngoài khi rót đồng lỏng, tránh rỗ khí và nứt vỡ chuông","Làm cho chuông đồng có màu vàng rơm tự nhiên","Để khuôn dễ bắt lửa bốc cháy tạo nhiệt","Để giảm khối lượng của khuôn đúc"],"correctIndex":0,"explanation":"Rơm trấu trong đất sét khi nung khuôn sẽ cháy thành tro, để lại các mao dẫn vi mô giúp khí nóng thoát ra dễ dàng khi rót kim loại, vật đúc không bị rỗ rỉ."},{"id":"vd-26","code":"VD-26","level":"van_dung","topic":"Điện - điện tử","question":"Trong máy xay sinh tố, khi động cơ bị kẹt do thực phẩm quá cứng, rơ le nhiệt bên trong tự động ngắt điện. Thiết bị này hoạt động để bảo vệ điều gì?","options":["Bảo vệ cuộn dây động cơ không bị quá dòng gây cháy nổ và hỏng máy","Bảo vệ lưỡi dao không bị cùn","Bảo vệ cối xay không bị xước","Giúp sinh tố thơm ngon hơn"],"correctIndex":0,"explanation":"Khi roto bị kẹt, dòng điện tăng vọt sinh nhiệt lớn; rơ le nhiệt tác động ngắt nguồn tức thời để bảo vệ cuộn dây stator khỏi quá nhiệt cháy hỏng."},{"id":"vd-27","code":"VD-27","level":"van_dung","topic":"Điện - điện tử","question":"Một gia đình lắp pin năng lượng mặt trời trên mái nhà. Để hòa vào lưới điện sinh hoạt 220V xoay chiều, thiết bị điện tử bắt buộc phải có là:","options":["Bộ biến tần Inverter (chuyển dòng một chiều DC từ tấm pin thành xoay chiều AC 220V)","Máy khoan bàn cơ khí","Đèn hồ quang thắp sáng","Động cơ quạt bàn"],"correctIndex":0,"explanation":"Pin mặt trời sinh dòng điện 1 chiều (DC). Bộ Inverter có chức năng nghịch lưu biến dòng DC thành dòng AC chuẩn 220V hòa lưới gia đình."},{"id":"vd-28","code":"VD-28","level":"van_dung","topic":"Luyện kim, cơ khí","question":"Để gia công các chi tiết có hình dạng 3D phức tạp như cánh tuabin máy bay hoặc khuôn dập mẫu xe ô tô từ khối hợp kim siêu cứng, công nghệ gia công cắt gọt tiên tiến nào được áp dụng?","options":["Máy phay CNC nhiều trục (4 trục, 5 trục) có điều khiển số bằng máy tính","Cưa gỗ thủ công","Máy uốn thanh sắt xây dựng","Đục đá thủ công mỹ nghệ"],"correctIndex":0,"explanation":"Máy phay trung tâm CNC 5 trục lập trình bằng máy tính (CAM/CNC) có khả năng gia công biên dạng mặt cong 3D phức tạp với độ chính xác micromet."},{"id":"vd-29","code":"VD-29","level":"van_dung","topic":"Điện - điện tử","question":"Khi sử dụng sóng Wi-Fi trong ngôi nhà nhiều tầng, nếu router đặt ở góc tầng 1 thì tầng 3 sóng rất yếu. Giải pháp kĩ thuật truyền thông không dây tối ưu là:","options":["Lắp hệ thống Wi-Fi Mesh đa điểm phủ sóng liền mạch toàn bộ các tầng","Thay bóng đèn sợi đốt thành đèn dầu","Nối dây đồng hồ nước vào router","Tắt điện thoại khi lên tầng 3"],"correctIndex":0,"explanation":"Hệ thống Wi-Fi Mesh gồm nhiều thiết bị phân tán kết nối với nhau đồng nhất một tên mạng (SSID), tự động chuyển vùng sóng mạnh khắp nhà nhiều tầng."},{"id":"vd-30","code":"VD-30","level":"van_dung","topic":"Nghề nghiệp & Đời sống","question":"Học sinh Mai rất yêu thích máy tính, các thiết bị thông minh IoT và robot tự hành trong công nghiệp. Em mong muốn thiết kế dây chuyền tự động cho các nhà máy lớn. Ngành học đại học phù hợp nhất với Mai là:","options":["Kĩ thuật điều khiển và tự động hóa","Khoa học đất nông nghiệp","Khảo cổ học lịch sử","Kĩ thuật dệt may thủ công"],"correctIndex":0,"explanation":"Ngành Kĩ thuật Điều khiển và Tự động hóa đào tạo chuyên sâu về robot công nghiệp, PLC, vi điều khiển, dây chuyền tự động trong các nhà máy thông minh."}];
-    
-    // Quick classes requested
-    const QUICK_CLASSES = ['10C05', '10C06', '10C07', '10C08'];
+    // 100 QUESTIONS EMBEDDED
+    const QUESTION_BANK = [{"id":"nb-01","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Gang được sản xuất từ nguyên liệu và thiết bị nào sau đây?","options":["Quặng sắt bằng lò cao luyện gang","Gang bằng lò thổi oxy","Gang bằng lò hồ quang điện","Cả B và C đều đúng"],"correctIndex":0,"explanation":"Theo SGK Công nghệ 10: Gang được sản xuất từ quặng sắt bằng lò cao luyện gang."},{"id":"nb-02","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Công nghệ trong lĩnh vực luyện kim, cơ khí phổ biến gồm mấy loại chính?","options":["5 loại","3 loại","2 loại","7 loại"],"correctIndex":0,"explanation":"5 công nghệ gồm: Luyện kim, Đúc kim loại, Gia công cắt gọt, Gia công áp lực và Hàn."},{"id":"nb-03","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Bản chất của công nghệ đúc là gì?","options":["Bóc đi lớp vật liệu thừa trên phôi để tạo chi tiết chính xác","Kim loại nấu chảy dưới dạng lỏng được rót vào khuôn, sau khi nguội và kết tinh sẽ tạo thành vật đúc","Sử dụng ngoại lực tác dụng lên vật liệu kim loại dẻo làm biến dạng theo yêu cầu","Nung nóng chảy mép kim loại tiếp xúc rồi để nguội dính kết lại"],"correctIndex":1,"explanation":"Đúc kim loại là công nghệ nấu kim loại thành trạng thái lỏng rồi rót vào khuôn có hình dạng của sản phẩm, sau khi nguội kết tinh tạo vật đúc."},{"id":"nb-04","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Theo sản phẩm tạo ra, công nghệ luyện kim tập trung vào mấy loại?","options":["1 loại","3 loại","2 loại","4 loại"],"correctIndex":2,"explanation":"Gồm 2 loại: Luyện kim đen (tạo ra gang và thép) và Luyện kim màu (tạo ra nhôm, đồng, chì, kẽm, vàng...)."},{"id":"nb-05","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Bản chất của công nghệ gia công cắt gọt là gì?","options":["Rót kim loại lỏng vào khuôn đúc","Bóc đi lớp vật liệu thừa trên phôi dưới dạng phoi, tạo ra chi tiết có hình dạng và kích thước chính xác","Dùng ngoại lực ép kim loại biến dạng dẻo","Nung nóng cục bộ để gắn kết 2 chi tiết"],"correctIndex":1,"explanation":"Gia công cắt gọt lấy đi phần kim loại thừa của phôi dưới dạng phoi bằng dụng cụ cắt để đạt hình dạng, kích thước yêu cầu."},{"id":"nb-06","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Thép được sản xuất chủ yếu từ nguyên liệu và thiết bị nào sau đây?","options":["Quặng sắt bằng lò cao luyện gang","Gang bằng lò oxy","Gang bằng lò hồ quang điện","Cả B và C đều đúng"],"correctIndex":3,"explanation":"Thép được sản xuất từ gang bằng lò thổi oxy (lò LD) hoặc lò hồ quang điện."},{"id":"nb-07","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Bản chất của công nghệ gia công áp lực là gì?","options":["Nấu chảy kim loại rồi rót vào khuôn nguội","Dùng dao cắt gọt tách phoi khỏi bề mặt phôi","Sử dụng ngoại lực tác dụng lên vật liệu kim loại có tính dẻo, làm biến dạng thành sản phẩm","Dùng hồ quang điện hàn nóng chảy kim loại"],"correctIndex":2,"explanation":"Gia công áp lực dựa vào tính dẻo của kim loại, dùng ngoại lực tác dụng làm kim loại biến dạng theo yêu cầu."},{"id":"nb-08","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Động cơ điện có mấy bộ phận chính?","options":["2 bộ phận","3 bộ phận","4 bộ phận","5 bộ phận"],"correctIndex":0,"explanation":"Động cơ điện gồm 2 bộ phận chính: Phần đứng yên (Stato) và phần chuyển động quay (Roto)."},{"id":"nb-09","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Công nghệ sản xuất gang, thép gây tác động gì đến môi trường?","options":["Phát thải khí CO2","Phát sinh bụi mịn","Gây tiếng ồn lớn","Cả 3 đáp án trên"],"correctIndex":3,"explanation":"Sản xuất gang thép thải ra lượng lớn khí CO2 gây hiệu ứng nhà kính, bụi xỉ và tiếng ồn lớn."},{"id":"nb-10","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Lí do đèn LED được sử dụng ngày càng rộng rãi trong đời sống là gì?","options":["Tiết kiệm điện năng","Hiệu quả chiếu sáng cao","Tuổi thọ cao","Cả 3 đáp án trên"],"correctIndex":3,"explanation":"Đèn LED tiêu thụ ít điện năng, phát quang tốt, không tỏa nhiều nhiệt và có tuổi thọ lên tới hàng chục nghìn giờ."},{"id":"nb-11","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Bản chất của công nghệ hàn là gì?","options":["Tạo mối liên kết cố định giữa các chi tiết kim loại bằng cách nung nóng chảy vùng tiếp xúc (hoặc nung dẻo rồi ép)","Sử dụng ngoại lực làm biến dạng phôi kim loại nguội","Lấy đi lớp vật liệu thừa bằng chuyển động cắt gọt của dao","Rót kim loại lỏng vào lòng khuôn nguội kết tinh"],"correctIndex":0,"explanation":"Công nghệ hàn là nối các chi tiết kim loại thành một khối không thể tháo rời bằng nung nóng chảy hoặc nung dẻo kết hợp lực ép."},{"id":"nb-12","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Ở Việt Nam hiện nay, hai công nghệ sản xuất điện năng truyền thống và phổ biến nhất là:","options":["Nhiệt điện và Thủy điện","Điện hạt nhân và Thủy điện","Điện gió và Điện sinh khối","Điện sóng biển và Thủy điện"],"correctIndex":0,"explanation":"Nhiệt điện (than, khí) và Thủy điện là 2 công nghệ sản xuất điện năng chiếm sản lượng lớn nhất từ trước đến nay."},{"id":"nb-13","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Nhược điểm chủ yếu của đèn sợi đốt là gì?","options":["Tiêu thụ nhiều điện năng","Hiệu quả phát quang thấp (tỏa nhiệt nhiều)","Tuổi thọ bóng thấp","Cả 3 đáp án trên"],"correctIndex":3,"explanation":"Đèn sợi đốt biến phần lớn điện năng thành nhiệt năng (~95%), chỉ ~5% thành quang năng nên tốn điện, nhanh cháy và tuổi thọ ngắn."},{"id":"nb-14","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Hai bộ phận chính của động cơ điện xoay chiều là:","options":["Stato (phần tĩnh)","Roto (phần quay)","Cả A và B đều đúng","Cả A và B đều sai"],"correctIndex":2,"explanation":"Cấu tạo cơ bản của động cơ điện gồm Stato (tạo từ trường) và Roto (quay khi có dòng điện tác dụng)."},{"id":"nb-15","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Đâu là công nghệ biến đổi năng lượng tự nhiên thành điện năng?","options":["Công nghệ nhiệt điện","Công nghệ thủy điện","Cả A và B đều đúng","Cả A và B đều sai"],"correctIndex":2,"explanation":"Cả thủy điện (thế năng dòng nước) và nhiệt điện (nhiệt năng đốt cháy nhiên liệu) đều biến đổi năng lượng thành điện năng."},{"id":"nb-16","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Kim loại đen trong công nghệ luyện kim bao gồm những kim loại nào?","options":["Gang và thép","Nhôm và đồng","Vàng và bạc","Chì và kẽm"],"correctIndex":0,"explanation":"Kim loại đen là hợp kim của sắt và cacbon, tiêu biểu là gang (C > 2,14%) và thép (C ≤ 2,14%)."},{"id":"nb-17","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Kim loại màu bao gồm các kim loại nào sau đây?","options":["Nhôm, đồng, kẽm, chì, vàng...","Gang và thép","Sắt xốp và gang xám","Thép cacbon và thép hợp kim"],"correctIndex":0,"explanation":"Kim loại màu gồm đồng, nhôm, thiếc, kẽm, chì, vàng, titan và các hợp kim của chúng."},{"id":"nb-18","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Đúc trong khuôn cát là phương pháp đúc sử dụng loại khuôn nào?","options":["Khuôn làm bằng hỗn hợp cát và chất dính","Khuôn bằng kim loại thép chịu nhiệt","Khuôn bằng sứ nung","Khuôn bằng polyme"],"correctIndex":0,"explanation":"Đúc khuôn cát dùng hỗn hợp cát đúc và chất liên kết để tạo lòng khuôn, thường chỉ dùng được một lần."},{"id":"nb-19","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Phương pháp gia công tiện chủ yếu dùng để gia công các bề mặt nào?","options":["Các bề mặt tròn xoay (mặt trụ, mặt côn, ren)","Mặt phẳng nghiêng phức tạp","Các góc hẹp không đối xứng","Các rãnh then kín đáy"],"correctIndex":0,"explanation":"Tiện là phương pháp gia công cắt gọt thực hiện trên máy tiện, chủ yếu gia công mặt tròn xoay trong và ngoài."},{"id":"nb-20","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Phương pháp gia công phay chủ yếu dùng để gia công bề mặt nào?","options":["Mặt phẳng, rãnh, rãnh then, bậc","Mặt ống trụ dài siêu mỏng","Các dây kim loại đường kính 1mm","Dây cáp điện"],"correctIndex":0,"explanation":"Phay là phương pháp gia công cắt gọt bằng dao phay quay tròn, gia công được mặt phẳng, rãnh rãnh then, góc bậc."},{"id":"nb-21","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Thao tác nào sau đây thuộc công nghệ gia công áp lực?","options":["Cán, kéo, rèn, dập","Tiện, phay, bào, mài","Đúc khuôn cát, đúc ly tâm","Hàn điện, hàn hơi"],"correctIndex":0,"explanation":"Gia công áp lực gồm: Cán (cho phôi qua 2 trục cán), Kéo (qua lỗ khuôn), Rèn (tự do/khuôn) và Dập (thể tích/tấm)."},{"id":"nb-22","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Đặc điểm của công nghệ cán kim loại là gì?","options":["Cho phôi đi qua khe hở giữa hai trục cán quay ngược chiều nhau","Kéo sợi phôi qua lỗ khuôn nhỏ hơn","Đập búa tay nhiều lần lên đe","Rót kim loại lỏng vào trục quay"],"correctIndex":0,"explanation":"Theo SGK: Cán là cho phôi đi qua khe hở giữa 2 trục cán quay ngược chiều nhau, làm giảm chiều dày và tăng chiều dài phôi."},{"id":"nb-23","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Đặc điểm của công nghệ kéo kim loại là gì?","options":["Kéo dài phôi qua lỗ khuôn có tiết diện nhỏ hơn phôi để giảm kích thước ngang","Kẹp phôi vào mâm cặp rồi dùng dao gọt phoi","Đun phôi lỏng chảy hoàn toàn","Tạo hồ quang điện để kết dính"],"correctIndex":0,"explanation":"Kéo kim loại là sự kéo dài phôi qua lỗ khuôn, dùng để chế tạo dây kim loại, thanh ống có chiều dài lớn."},{"id":"nb-24","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Hai nhóm công nghệ hàn kim loại chính theo trạng thái kim loại mối hàn là:","options":["Hàn nóng chảy và hàn áp lực","Hàn tự động và hàn thủ công","Hàn sắt và hàn nhôm","Hàn ngoài trời và hàn trong nhà"],"correctIndex":0,"explanation":"Hàn nóng chảy (chỗ hàn và que hàn nung chảy kết tinh) và hàn áp lực (nung dẻo kết hợp ép lực)."},{"id":"nb-25","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Công nghệ điện - quang có chức năng chuyển đổi năng lượng nào?","options":["Biến đổi điện năng thành quang năng","Biến đổi cơ năng thành quang năng","Biến đổi quang năng thành điện năng","Biến đổi hóa năng thành cơ năng"],"correctIndex":0,"explanation":"Công nghệ điện - quang là công nghệ biến đổi điện năng thành ánh sáng (quang năng)."},{"id":"nb-26","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Đèn huỳnh quang phát sáng dựa trên nguyên lí nào?","options":["Sự phóng điện giữa hai điện cực tạo tia tử ngoại tác động vào lớp bột huỳnh quang","Sợi đốt vonfram bị đốt nóng đỏ rực","Phản ứng hạt nhân sinh ra photon ánh sáng","Dòng điện chạy qua cuộn cảm tạo từ trường quay"],"correctIndex":0,"explanation":"Theo SGK: Khi điện áp đặt vào hai điện cực, sự phóng điện xảy ra tạo ra tia tử ngoại kích thích lớp bột huỳnh quang phát sáng."},{"id":"nb-27","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Công nghệ điện - cơ chia thành 2 nhóm chuyển động đầu ra nào sau đây?","options":["Chuyển động dạng quay và chuyển động dạng tịnh tiến","Chuyển động rung và chuyển động lắc","Chuyển động thẳng đều và chuyển động xoắn ốc","Chuyển động bước và chuyển động tĩnh"],"correctIndex":0,"explanation":"Điện cơ chia thành: biến đổi năng lượng điện - cơ dạng quay (động cơ điện) và dạng tịnh tiến (van điện từ, relay)."},{"id":"nb-28","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Thiết bị nào sau đây biến đổi năng lượng điện - cơ ở dạng quay?","options":["Quạt điện","Van điện từ","Rơ le điện (Relay)","Cầu dao tự động"],"correctIndex":0,"explanation":"Quạt điện sử dụng động cơ điện tạo ra chuyển động quay của cánh quạt."},{"id":"nb-29","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Thiết bị nào sau đây biến đổi năng lượng điện - cơ ở dạng tịnh tiến?","options":["Van điện từ và rơ le","Máy sấy tóc","Máy bơm nước","Máy xay sinh tố"],"correctIndex":0,"explanation":"Van điện từ và rơ le (relay) tạo lực hút điện từ tịnh tiến kéo lõi thép để đóng ngắt."},{"id":"nb-30","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Nhà khoa học người Mỹ phát minh ra rơ le (relay) vào năm 1835 là ai?","options":["Joseph Henry","Thomas Edison","Nikola Tesla","Michael Faraday"],"correctIndex":0,"explanation":"Theo mục \"Thông tin bổ sung\" SGK: Rơ le được sáng chế vào năm 1835 bởi nhà khoa học người Mỹ Joseph Henry."},{"id":"nb-31","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Mục đích chính của công nghệ điều khiển và tự động hóa là gì?","options":["Thay thế các thao tác của con người bằng máy móc, robot tự động để tăng năng suất và giảm chi phí","Tạo ra kim loại nguyên chất từ quặng","Đốt cháy than đá để tạo ra hơi nước","Chuyển điện năng thành ánh sáng trong gia đình"],"correctIndex":0,"explanation":"Tự động hóa thay thế thao tác thủ công của con người bằng máy móc, robot giúp tăng năng suất, giảm thiểu nhân công, thời gian và chi phí."},{"id":"nb-32","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Công nghệ truyền thông không dây truyền tải thông tin qua môi trường nào?","options":["Khoảng không gian bằng sóng điện từ mà không cần dây dẫn","Dây cáp đồng trục truyền tín hiệu điện","Sợi cáp quang thủy tinh truyền tín hiệu ánh sáng","Dây dẫn truyền tải điện cao thế 500kV"],"correctIndex":0,"explanation":"Truyền thông không dây cho phép truyền tải thông tin qua khoảng cách không gian bằng sóng điện từ mà không cần dây dẫn."},{"id":"nb-33","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Các công nghệ truyền thông không dây phổ biến bao gồm:","options":["Wi-Fi, Bluetooth, Mạng di động (cellular)","Cáp quang, Cáp mạng LAN, Cáp HDMI","Đường sắt, Đường bộ, Đường hàng không","USB, Thẻ nhớ SD, Đĩa DVD"],"correctIndex":0,"explanation":"3 công nghệ truyền thông không dây phổ biến được SGK liệt kê là Wi-Fi, Bluetooth và Mạng di động."},{"id":"nb-34","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Sản phẩm nào sau đây là sản phẩm trực tiếp của công nghệ đúc?","options":["Vỏ động cơ xe máy, thân máy tiện","Tấm tôn lợp nhà","Dây điện bằng đồng mỏng","Thép thanh vằn xây dựng phi 16"],"correctIndex":0,"explanation":"Vỏ động cơ, thân máy cái có hình dạng phức tạp nhiều hốc bên trong thường được chế tạo bằng công nghệ đúc."},{"id":"nb-35","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Công việc chính của kĩ sư luyện kim là gì?","options":["Thiết kế nhà máy, thiết bị luyện kim, lập quy trình công nghệ và điều hành sản xuất kim loại, hợp kim","Lái tàu điện chở hành khách","Cắt gọt phay bào các chi tiết gỗ mỹ nghệ","Lập trình trang web và cài đặt mạng máy tính"],"correctIndex":0,"explanation":"Theo SGK mục Kết nối nghề nghiệp: Kĩ sư luyện kim thiết kế nhà máy, thiết bị, quy trình để sản xuất ra kim loại và hợp kim."},{"id":"nb-36","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Nhà máy thủy điện sử dụng dạng năng lượng ban đầu nào để phát điện?","options":["Năng lượng dòng nước (thế năng và động năng của nước)","Nhiệt năng của than đá","Năng lượng hạt nhân Urani","Bức xạ nhiệt mặt trời"],"correctIndex":0,"explanation":"Thủy điện biến đổi thế năng và động năng của dòng nước làm quay tuabin máy phát điện để tạo ra điện năng."},{"id":"nb-37","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Năm ra đời của bóng đèn sợi đốt do Thomas Edison hoàn thiện là năm nào?","options":["Năm 1879","Năm 1934","Năm 2006","Năm 1835"],"correctIndex":0,"explanation":"Theo mốc thời gian Hình 3.9 SGK: Đèn sợi đốt ra đời năm 1879, đèn huỳnh quang năm 1934, đèn LED phổ biến từ năm 2006."},{"id":"nb-38","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Bóng đèn huỳnh quang được đánh dấu bước phát triển vào mốc năm nào trong SGK?","options":["Năm 1934","Năm 1879","Năm 2006","Năm 1995"],"correctIndex":0,"explanation":"Theo mốc thời gian Hình 3.9 SGK Công nghệ 10: Đèn huỳnh quang đánh dấu mốc năm 1934."},{"id":"nb-39","level":"Nhận biết","levelKey":"nb","category":"Điện & Điện tử","question":"Kĩ sư mạng máy tính và truyền thông dữ liệu có nhiệm vụ gì?","options":["Nghiên cứu nguyên lí mạng, thiết kế, xây dựng hệ thống mạng từ nội bộ đến diện rộng kết nối toàn cầu","Đúc tượng đồng nghệ thuật","Vận hành lò cao luyện gang thép","Rèn dập các chi tiết cơ khí trên đe"],"correctIndex":0,"explanation":"Theo mục Kết nối nghề nghiệp SGK: Kĩ sư mạng nghiên cứu, thiết kế, xây dựng hệ thống mạng máy tính từ nội bộ đến toàn cầu."},{"id":"nb-40","level":"Nhận biết","levelKey":"nb","category":"Luyện kim & Cơ khí","question":"Trong gia công cắt gọt, phần vật liệu bị dụng cụ cắt bóc tách ra khỏi phôi được gọi là gì?","options":["Phoi","Xỉ hàn","Ba-via đúc","Tạp chất"],"correctIndex":0,"explanation":"Lớp vật liệu bị dao bóc tách ra khi cắt gọt được gọi là phoi (phoi vụn, phoi xếp, phoi dây)."},{"id":"th-01","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Công nghệ thứ hai trong lĩnh vực điện – điện tử được đề cập theo thứ tự trong bài học là gì?","options":["Công nghệ điện – quang","Công nghệ điện – cơ","Công nghệ điều khiển và tự động hóa","Công nghệ sản xuất điện năng"],"correctIndex":0,"explanation":"Thứ tự trong mục II SGK: 1. Sản xuất điện năng; 2. Điện – quang; 3. Điện – cơ; 4. Điều khiển và tự động hoá; 5. Truyền thông không dây."},{"id":"th-02","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Theo nội dung SGK, truyền thông không dây được chia thành mấy loại phổ biến?","options":["3 loại (Wi-Fi, Bluetooth, Mạng di động)","4 loại","2 loại","1 loại"],"correctIndex":0,"explanation":"SGK nêu 3 loại: Công nghệ Wi-Fi, Công nghệ Bluetooth, Công nghệ mạng di động."},{"id":"th-03","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Công nghệ đầu tiên trong lĩnh vực điện – điện tử được đề cập trong bài học là gì?","options":["Công nghệ điện – quang","Công nghệ điện – cơ","Công nghệ sản xuất điện năng","Công nghệ điều khiển và tự động hóa"],"correctIndex":2,"explanation":"Công nghệ đầu tiên được trình bày trong mục II là \"1. Công nghệ sản xuất điện năng\"."},{"id":"th-04","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Công nghệ thứ tư trong lĩnh vực điện – điện tử được đề cập trong bài học là gì?","options":["Công nghệ sản xuất điện năng","Công nghệ điều khiển và tự động hóa","Công nghệ điện – quang","Công nghệ điện – cơ"],"correctIndex":1,"explanation":"Mục 4 trong phần II là \"4. Công nghệ điều khiển và tự động hoá\"."},{"id":"th-05","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Có mấy công nghệ phổ biến trong lĩnh vực luyện kim, cơ khí được trình bày trong SGK?","options":["1 công nghệ","2 công nghệ","4 công nghệ","5 công nghệ"],"correctIndex":3,"explanation":"Gồm 5 công nghệ: Luyện kim, Đúc, Gia công cắt gọt, Gia công áp lực, Hàn."},{"id":"th-06","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Công nghệ thứ ba trong lĩnh vực điện – điện tử được đề cập đến trong bài là gì?","options":["Công nghệ sản xuất điện năng","Công nghệ điện – cơ","Công nghệ điện – quang","Công nghệ điều khiển và tự động hóa"],"correctIndex":1,"explanation":"Mục thứ ba trong phần II SGK là \"3. Công nghệ điện – cơ\"."},{"id":"th-07","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Công nghệ thứ hai trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là gì?","options":["Công nghệ đúc kim loại","Công nghệ luyện kim","Công nghệ gia công cắt gọt","Công nghệ gia công áp lực"],"correctIndex":0,"explanation":"Thứ tự phần I SGK: 1. Luyện kim; 2. Đúc kim loại; 3. Gia công cắt gọt; 4. Gia công áp lực; 5. Hàn."},{"id":"th-08","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Khái niệm chính xác của công nghệ luyện kim là gì?","options":["Là công nghệ chế tạo sản phẩm kim loại bằng phương pháp nấu lỏng rồi rót vào khuôn có hình dáng sản phẩm","Là công nghệ điều chế kim loại, hợp kim để dùng trong cuộc sống từ các loại quặng hoặc từ các nguyên liệu khác","Là công nghệ bóc đi phần kim loại thừa dưới dạng phoi nhờ dụng cụ cắt gọt","Là công nghệ dùng ngoại lực làm biến dạng kim loại dẻo theo khuôn mẫu"],"correctIndex":1,"explanation":"Theo SGK: Công nghệ luyện kim là công nghệ điều chế kim loại, hợp kim từ các quặng hoặc nguyên liệu khác."},{"id":"th-09","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Công nghệ thứ ba trong lĩnh vực luyện kim, cơ khí được đề cập trong bài học là gì?","options":["Công nghệ gia công áp lực","Công nghệ đúc","Công nghệ luyện kim","Công nghệ gia công cắt gọt"],"correctIndex":3,"explanation":"Mục số 3 trong phần I là \"3. Công nghệ gia công cắt gọt\"."},{"id":"th-10","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Khái niệm chính xác của công nghệ đúc là gì?","options":["Là công nghệ chế tạo sản phẩm kim loại bằng phương pháp nấu kim loại thành trạng thái lỏng, sau đó rót vào khuôn có hình dạng và kích thước như sản phẩm","Là công nghệ điều chế kim loại từ quặng sắt trong lò cao","Là công nghệ lấy đi phoi bằng mũi khoan và dao tiện","Là công nghệ nối các chi tiết thành khối không thể tháo rời"],"correctIndex":0,"explanation":"Đúc kim loại là phương pháp nấu kim loại thành trạng thái lỏng rồi rót vào khuôn có lòng khuôn mang hình dạng chi tiết."},{"id":"th-11","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Công nghệ đầu tiên trong lĩnh vực luyện kim, cơ khí được đề cập đến trong SGK là gì?","options":["Công nghệ đúc","Công nghệ gia công cắt gọt","Công nghệ luyện kim","Công nghệ gia công áp lực"],"correctIndex":2,"explanation":"Mục 1 của phần I SGK là \"1. Công nghệ luyện kim\"."},{"id":"th-12","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Khái niệm chính xác của công nghệ gia công áp lực là gì?","options":["Là công nghệ dựa vào tính dẻo của kim loại, dùng ngoại lực của thiết bị làm cho kim loại biến dạng theo hình dáng yêu cầu","Là công nghệ điều chế gang thép trong lò nung hồ quang điện","Là công nghệ rót kim loại lỏng vào khuôn quay ly tâm","Là công nghệ bóc tách vật liệu thừa bằng tia nước áp suất cao"],"correctIndex":0,"explanation":"Gia công áp lực tận dụng tính dẻo của kim loại ở nhiệt độ cao hoặc nguội để tạo hình dưới tác dụng của ngoại lực (búa, trục cán, khuôn dập)."},{"id":"th-13","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Có bao nhiêu công nghệ chính trong lĩnh vực điện – điện tử được trình bày trong bài học?","options":["1 công nghệ","2 công nghệ","4 công nghệ","5 công nghệ"],"correctIndex":3,"explanation":"Có 5 công nghệ: Sản xuất điện năng, Điện - quang, Điện - cơ, Điều khiển và tự động hoá, Truyền thông không dây."},{"id":"th-14","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Các công nghệ truyền thông không dây được ứng dụng rộng rãi ngày nay bao gồm:","options":["Công nghệ Wi-Fi","Công nghệ Bluetooth","Công nghệ mạng di động","Cả 3 đáp án trên"],"correctIndex":3,"explanation":"Wi-Fi, Bluetooth và Mạng di động (3G/4G/5G) là 3 công nghệ truyền thông không dây chính hiện nay."},{"id":"th-15","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Khái niệm chính xác của công nghệ gia công cắt gọt là gì?","options":["Là công nghệ điều chế kim loại, hợp kim từ các quặng nguyên liệu","Là công nghệ nung chảy kim loại rồi rót vào lòng khuôn đúc","Là công nghệ thực hiện việc lấy đi một phần kim loại của phôi dưới dạng phoi nhờ các dụng cụ cắt và máy cắt kim loại để tạo ra chi tiết theo yêu cầu","Là công nghệ uốn cong thanh sắt bằng ngoại lực"],"correctIndex":2,"explanation":"Gia công cắt gọt dùng dụng cụ cắt (dao tiện, phay, khoan...) hớt bỏ kim loại thừa dưới dạng phoi để đạt kích thước và độ bóng chuẩn xác."},{"id":"th-16","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Tại sao sản phẩm của công nghệ đúc thường được gọi là \"phôi đúc\" thay vì chi tiết hoàn chỉnh?","options":["Vì bề mặt vật đúc còn thô ráp và độ chính xác kích thước chưa cao, cần qua gia công cơ khí tinh chế","Vì vật đúc luôn bị rỗng bên trong không thể sử dụng","Vì kim loại đúc chưa đủ độ cứng cần thiết","Vì khuôn đúc luôn làm hỏng hình dáng chi tiết"],"correctIndex":0,"explanation":"Vật đúc có bề mặt nhám, sai số lớn nên thường gọi là phôi đúc, cần gia công cắt gọt lại để đạt độ chính xác bề mặt yêu cầu."},{"id":"th-17","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Sự khác biệt cơ bản nhất giữa hàn nóng chảy và hàn áp lực là gì?","options":["Hàn nóng chảy kim loại chuyển sang trạng thái lỏng hoàn toàn; hàn áp lực kim loại nung đến trạng thái dẻo rồi ép lại","Hàn nóng chảy dùng lực ép lớn, hàn áp lực không dùng lực ép","Hàn nóng chảy chỉ dùng cho kim loại màu, hàn áp lực chỉ dùng cho kim loại đen","Hàn nóng chảy có thể tháo rời được mối nối, hàn áp lực thì không"],"correctIndex":0,"explanation":"Hàn nóng chảy nung chảy vùng nối và que hàn lỏng kết tinh; hàn áp lực nung dẻo mép tiếp xúc rồi dùng ngoại lực ép dính chặt."},{"id":"th-18","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Tại sao đèn LED lại tiết kiệm điện năng hơn rất nhiều so với đèn sợi đốt?","options":["Vì đèn LED biến đổi trực tiếp điện năng thành quang năng mà tỏa rất ít nhiệt lượng thừa","Vì đèn LED sử dụng điện áp cực kỳ cao hàng triệu vôn","Vì bóng đèn LED không có dây dẫn điện bên trong","Vì đèn LED chỉ phát sáng khi có ánh nắng mặt trời rọi vào"],"correctIndex":0,"explanation":"Đèn LED hoạt động dựa trên tiếp giáp p-n giải phóng photon trực tiếp với tổn hao nhiệt cực thấp so với hiệu ứng đốt nóng điện trở của đèn sợi đốt."},{"id":"th-19","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Điểm khác biệt cơ bản giữa động cơ điện và máy phát điện là gì?","options":["Động cơ điện biến đổi điện năng thành cơ năng; máy phát điện biến đổi cơ năng thành điện năng","Động cơ điện tạo ra điện; máy phát điện tiêu thụ điện năng","Động cơ điện không có stato; máy phát điện chỉ có roto","Động cơ điện chỉ dùng điện xoay chiều; máy phát điện chỉ dùng pin 1 chiều"],"correctIndex":0,"explanation":"Động cơ điện nhận điện để quay (điện sang cơ); máy phát điện nhận công cơ học từ tuabin để tạo dòng điện (cơ sang điện)."},{"id":"th-20","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Rơ le (relay) hoạt động dựa trên cơ chế nào để điều khiển dòng điện lớn?","options":["Dùng dòng điện áp thấp chạy qua cuộn dây tạo lực từ hút thanh tiếp điểm đóng ngắt mạch điện áp cao","Dùng bánh răng cơ khí quay bằng tay quay thủ công","Dùng nhiệt độ môi trường nung chảy cầu chì tự ngắt","Dùng sóng vô tuyến tần số cao để truyền tải công suất lớn"],"correctIndex":0,"explanation":"Relay dùng một nguồn điện thấp tạo từ trường trong cuộn hút để dịch chuyển tiếp điểm tịnh tiến, đóng ngắt mạch điện có điện áp cao an toàn."},{"id":"th-21","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Để chế tạo thanh ray tàu hỏa bằng thép có độ dài hàng chục mét, người ta chủ yếu dùng công nghệ nào?","options":["Công nghệ cán nóng định hình (gia công áp lực)","Công nghệ đúc khuôn cát đơn chiếc","Công nghệ tiện phay từng khúc nối lại","Công nghệ mài mòn bằng tia laser"],"correctIndex":0,"explanation":"Thanh ray tàu hỏa đòi hỏi thớ kim loại liên tục, độ bền kéo cao và dài hàng chục mét, được sản xuất bằng máy cán định hình nhiều trục."},{"id":"th-22","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Ưu điểm nổi bật nhất của công nghệ gia công cắt gọt so với công nghệ đúc là gì?","options":["Độ chính xác về kích thước hình học và độ nhẵn bóng bề mặt rất cao","Không tốn vật liệu phôi gia công","Có thể gia công được mọi vật liệu mà không sinh ra phoi thừa","Tạo ra kết cấu rỗng phức tạp dễ dàng hơn đúc"],"correctIndex":0,"explanation":"Gia công cắt gọt (tiện, phay, mài) đạt độ chính xác micromet và bề mặt nhẵn bóng rất cao so với bề mặt thô của đúc."},{"id":"th-23","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Việc áp dụng công nghệ tự động hóa trong các nhà máy lắp ráp ô tô mang lại lợi ích lớn nhất nào?","options":["Đảm bảo độ chính xác đồng nhất, giảm tối đa sai sót, tăng năng suất và bảo vệ công nhân khỏi môi trường độc hại","Loại bỏ hoàn toàn chi phí đầu tư ban đầu cho máy móc","Không cần sử dụng nguồn điện năng trong suốt quá trình hoạt động","Sản xuất xe hơi không cần sử dụng bất kỳ chi tiết kim loại nào"],"correctIndex":0,"explanation":"Robot tự động hàn, sơn, lắp ráp xe chính xác hàng triệu chu kỳ, tăng tốc độ dây chuyền và giải phóng công nhân khỏi bụi sơn, khói hàn."},{"id":"th-24","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Tại sao kim loại có tính dẻo mới có thể áp dụng được công nghệ gia công áp lực (rèn, cán, dập)?","options":["Vì kim loại dẻo có khả năng biến dạng vĩnh viễn dưới tác dụng của ngoại lực mà không bị nứt vỡ hay phá hủy","Vì kim loại dẻo rất mềm có thể dùng kéo cắt thủ công","Vì kim loại dẻo tự nóng chảy ở nhiệt độ phòng","Vì kim loại dẻo luôn nhẹ hơn nước"],"correctIndex":0,"explanation":"Tính dẻo cho phép kim loại trượt các mạng tinh thể dưới áp lực ngoài, định hình lại hình dáng mới mà không bị nứt vỡ rạn nứt kết cấu."},{"id":"th-25","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Tại sao sóng Wi-Fi và Bluetooth cùng là truyền thông không dây nhưng phạm vi phủ sóng của Bluetooth lại hẹp hơn Wi-Fi?","options":["Bluetooth được thiết kế cho mạng cá nhân (PAN) tầm ngắn tiết kiệm năng lượng, công suất phát thấp hơn nhiều so với Wi-Fi","Vì Bluetooth không sử dụng sóng điện từ","Vì Bluetooth chỉ hoạt động được khi có dây dẫn cắm kèm","Vì Bluetooth phát sóng trên mặt đất còn Wi-Fi phát từ vệ tinh không gian"],"correctIndex":0,"explanation":"Bluetooth thiết kế kết nối thiết bị cá nhân (tai nghe, chuột) tầm <10m để tiết kiệm pin tối đa; Wi-Fi có công suất phát lớn phủ sóng rộng toàn nhà."},{"id":"th-26","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Hiện tượng nào giải thích nguyên lí tạo ra chuyển động quay của roto trong động cơ điện?","options":["Lực từ tác dụng lên dây dẫn mang dòng điện đặt trong từ trường của stato làm roto quay","Áp suất không khí đẩy cánh quạt quay tròn","Sự nung nóng đỏ làm kim loại nở ra đẩy roto xoay","Trọng lực của Trái Đất hút một bên roto xuống dưới"],"correctIndex":0,"explanation":"Động cơ điện hoạt động dựa trên định luật cảm ứng điện từ: từ trường của stato tác dụng lực Lorentz lên khung dây roto làm roto quay."},{"id":"th-27","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Mối nối bằng công nghệ hàn có đặc tính gì so với mối ghép bu-lông đai ốc?","options":["Mối hàn là mối ghép cố định không thể tháo rời được mà không phá hủy vật liệu","Mối hàn có thể vặn ốc tháo rời định kỳ dễ dàng","Mối hàn không chịu được lực rung lắc","Mối hàn luôn dùng gioăng cao su đệm ở giữa"],"correctIndex":0,"explanation":"Mối hàn liên kết các chi tiết thành một khối thống nhất vĩnh viễn, không thể tháo rời nếu không cắt phá vật liệu."},{"id":"th-28","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Đúc ly tâm là phương pháp đúc kim loại như thế nào?","options":["Rót kim loại lỏng vào khuôn đang quay tròn quanh trục, lực ly tâm ép kim loại bám chặt vào thành khuôn","Rót kim loại vào khuôn nằm yên ở đáy giếng sâu","Dùng búa máy đập phôi kim loại nóng chảy","Thổi luồng khí lạnh cực nhanh làm đông đặc kim loại"],"correctIndex":0,"explanation":"Theo SGK: Đúc ly tâm rót kim loại lỏng vào khuôn quay, lực quán tính ly tâm đẩy kim loại điền đầy lòng khuôn, thích hợp đúc ống rỗng."},{"id":"th-29","level":"Thông hiểu","levelKey":"th","category":"Luyện kim & Cơ khí","question":"Công nghệ nào sau đây thuộc nhóm gia công cắt gọt không truyền thống hiện đại?","options":["Gia công bằng tia laser, tia nước áp suất cao và tia lửa điện","Cưa tay và đục sắt thủ công","Cán tôn thép tấm trên máy cán","Nấu quặng sắt trong lò cao"],"correctIndex":0,"explanation":"SGK nêu các công nghệ cắt gọt hiện đại gồm: gia công bằng tia lửa điện (EDM), bằng tia nước, bằng laser..."},{"id":"th-30","level":"Thông hiểu","levelKey":"th","category":"Điện & Điện tử","question":"Theo dòng lịch sử công nghệ điện – quang, thứ tự ra đời của 3 loại bóng đèn phổ biến là:","options":["Đèn sợi đốt (1879) → Đèn huỳnh quang (1934) → Đèn LED (2006)","Đèn LED → Đèn huỳnh quang → Đèn sợi đốt","Đèn huỳnh quang → Đèn sợi đốt → Đèn LED","Đèn sợi đốt → Đèn LED → Đèn huỳnh quang"],"correctIndex":0,"explanation":"Thứ tự phát triển theo mốc thời gian SGK Hình 3.9: Đèn sợi đốt (1879) đến Đèn phóng điện huỳnh quang (1934) và Đèn LED (2006)."},{"id":"vd-01","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Ngành công nghệ nào biến đổi điện năng thành cơ năng dựa trên nguyên lí cảm ứng điện từ?","options":["Công nghệ điện – điện tử","Công nghệ điện – cơ","Công nghệ điều khiển và tự động hóa","Công nghệ điện – quang"],"correctIndex":1,"explanation":"Công nghệ điện – cơ ứng dụng hiện tượng cảm ứng điện từ để chuyển năng lượng điện thành chuyển động cơ học."},{"id":"vd-02","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Xác định: Công nghệ trong lĩnh vực luyện kim, cơ khí có bao nhiêu ngành/phân nhánh chính theo chuẩn chương trình?","options":["5 ngành","6 ngành","3 ngành","4 ngành"],"correctIndex":0,"explanation":"Lĩnh vực luyện kim, cơ khí trong Bài 3 gồm 5 công nghệ chính: Luyện kim, Đúc, Gia công cắt gọt, Gia công áp lực, Hàn."},{"id":"vd-03","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Hãy xác định ngành công nghệ nào được dùng để tạo mối liên kết cố định giữa các chi tiết kim loại bằng cách nung nóng chảy kim loại ở vùng tiếp xúc?","options":["Công nghệ gia công áp lực","Công nghệ hàn","Công nghệ gia công cắt gọt","Công nghệ đúc"],"correctIndex":1,"explanation":"Nung nóng chảy mép nối để gắn kết cố định các chi tiết kim loại là bản chất của công nghệ hàn (hàn nóng chảy)."},{"id":"vd-04","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Công nghệ trong lĩnh vực luyện kim cơ khí bao gồm những nhóm công nghệ nào dưới đây?","options":["Công nghệ gia công cắt gọt + Công nghệ gia công áp lực + Công nghệ hàn","Công nghệ luyện kim + Công nghệ đúc","Cả A và B đều đúng","Chỉ có công nghệ đúc và hàn"],"correctIndex":2,"explanation":"Tổng hợp cả A và B tạo nên đủ 5 công nghệ luyện kim, cơ khí của bài học."},{"id":"vd-05","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Ngành công nghệ nào sau đây KHÔNG thuộc lĩnh vực luyện kim, cơ khí?","options":["Công nghệ hàn","Công nghệ luyện kim","Công nghệ sản xuất điện năng","Công nghệ đúc"],"correctIndex":2,"explanation":"Công nghệ sản xuất điện năng thuộc Lĩnh vực Điện – Điện tử."},{"id":"vd-06","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Trong công nghệ gia công cắt gọt kim loại, có những phương thức gia công cơ bản nào?","options":["Công nghệ tiện","Công nghệ phay","Công nghệ khoan","Cả 3 đáp án trên"],"correctIndex":3,"explanation":"Tiện, phay, khoan, bào, mài là các phương thức gia công cắt gọt kim loại cơ bản nhất."},{"id":"vd-07","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Xác định: Nhược điểm của công nghệ nào gây ô nhiễm môi trường nghiêm trọng vì thải ra nhiều khí carbonic (CO2), bụi và tiếng ồn?","options":["Công nghệ hàn","Công nghệ gia công cắt gọt","Công nghệ đúc","Công nghệ luyện kim"],"correctIndex":3,"explanation":"Công nghệ luyện kim (đặc biệt luyện gang thép trong lò cao) tiêu tốn năng lượng khổng lồ và thải ra khí CO2, bụi lò, xỉ kim loại."},{"id":"vd-08","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Trong công nghệ gia công áp lực, rèn có thể chia thành mấy hình thức chính?","options":["4 hình thức","3 hình thức","2 hình thức (Rèn tự do và rèn khuôn)","1 hình thức"],"correctIndex":2,"explanation":"Rèn kim loại gồm 2 hình thức: Rèn tự do (đập thủ công hoặc máy không giới hạn biên dạng) và Rèn khuôn (ép kim loại vào lòng khuôn dập)."},{"id":"vd-09","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Vật dụng nào quen thuộc trong đời sống hàng ngày dưới đây thường được đúc bằng gang?","options":["Mũ lưỡi trai","Nồi, chảo gang đúc truyền thống","Ruột bút chì","Thước kẻ nhựa dẻo"],"correctIndex":1,"explanation":"Nồi gang, chảo gang, nắp hố ga trên đường phố là những sản phẩm tiêu biểu được đúc bằng gang xám."},{"id":"vd-10","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Các loại đèn điện nào đã và đang được sử dụng phổ biến trong đời sống sinh hoạt và sản xuất?","options":["Đèn huỳnh quang","Đèn sợi đốt","Đèn compact, đèn LED","Cả 3 đáp án trên"],"correctIndex":3,"explanation":"Cả 4 loại đèn trên đều đã và đang phục vụ chiếu sáng dân dụng và công nghiệp."},{"id":"vd-11","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Trong thực tế chiếu sáng công cộng hiện đại, việc thay thế đèn cao áp thủy ngân bằng đèn LED đem lại lợi ích tổng hợp nào?","options":["Tiết kiệm điện năng vượt trội, hiệu quả chiếu sáng cao và tuổi thọ bóng rất dài","Tỏa nhiệt lượng lớn để sưởi ấm đường phố vào mùa đông","Giá thành rẻ hơn dây đồng và không cần cấp điện","Có thể dùng thay thế cho động cơ xe máy"],"correctIndex":0,"explanation":"Đèn LED giảm 70% tiền điện, tuổi thọ lên tới 50.000 giờ, giảm chi phí sửa chữa thay thế chiếu sáng đô thị."},{"id":"vd-12","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Trong 4 thiết bị: (a) Quạt điện, (b) Van điện từ, (c) Rơ le điện, (d) Máy sấy tóc; những thiết bị nào thuộc loại điện cơ có chuyển động DẠNG QUAY?","options":["Hình a và b","Hình a và c","Hình b và c","Hình a và d (Quạt điện và Máy sấy tóc)"],"correctIndex":3,"explanation":"Quạt điện và máy sấy tóc đều có mô tơ làm quay cánh quạt; còn van điện từ và rơ le là cơ cấu đóng mở tịnh tiến."},{"id":"vd-13","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Bác thợ cơ khí muốn làm một chiếc cổng sắt nghệ thuật uốn hoa văn từ các thanh thép, bác cần áp dụng phối hợp những công nghệ nào?","options":["Gia công cắt gọt (cắt thanh), Gia công áp lực (uốn rèn hoa văn) và Công nghệ hàn (gắn kết các thanh thép)","Chỉ dùng công nghệ đúc ly tâm","Chỉ dùng công nghệ luyện gang bằng lò cao","Dùng công nghệ điện - quang"],"correctIndex":0,"explanation":"Cổng sắt hoa văn cần cưa cắt sắt theo kích thước, uốn uốn tạo hình hoa văn (gia công áp lực) và hàn đính cố định các thanh sắt lại với nhau."},{"id":"vd-14","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Một gia đình muốn lắp đặt hệ thống tự động ngắt điện khi bình nóng lạnh xảy ra sự cố rò rỉ điện hoặc quá tải, thiết bị ứng dụng công nghệ điện cơ tịnh tiến phù hợp nhất là gì?","options":["Aptomat chống giật / Rơ le nhiệt bảo vệ (Relay)","Bóng đèn huỳnh quang 1m2","Mô tơ máy bơm tăng áp","Bộ phát sóng Wi-Fi 5GHz"],"correctIndex":0,"explanation":"Aptomat và rơ le bảo vệ dùng cuộn hút điện từ hoặc thanh lưỡng kim đẩy lẫy tịnh tiến ngắt tiếp điểm điện khi có sự cố."},{"id":"vd-15","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Một nông trại thông minh muốn điều khiển van tưới nước tự động từ xa thông qua ứng dụng trên điện thoại thông minh, hệ thống này kết hợp những công nghệ nào?","options":["Công nghệ truyền thông không dây (Wi-Fi/4G), Công nghệ điều khiển tự động hóa và Công nghệ điện - cơ (van điện từ)","Công nghệ đúc khuôn cát và công nghệ hàn hồ quang","Công nghệ luyện kim lò cao và cán kéo phôi thép","Công nghệ nhiệt điện than đá"],"correctIndex":0,"explanation":"Hệ thống dùng sóng không dây gửi lệnh từ app đến mạch điều khiển vi xử lý, mạch điều khiển kích hoạt van điện từ (điện-cơ) mở nước tưới."},{"id":"vd-16","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Tại các xưởng sản xuất bu-lông, đai ốc tiêu chuẩn ren M10, phương pháp gia công tạo ren ngoài trục bu-lông phổ biến và năng suất nhất là gì?","options":["Phương pháp tiện ren trên máy tiện hoặc cán ren bằng trục lăn ren (gia công áp lực)","Đúc nguyên khối cả ren bằng khuôn cát","Hàn ghép từng vòng ren vào thân bu-lông","Dùng búa rèn thủ công trên đe thép"],"correctIndex":0,"explanation":"Bu-lông hàng loạt thường được tiện ren trên máy tiện CNC hoặc cán ép rãnh ren nguội bằng con lăn để thớ kim loại không bị cắt đứt."},{"id":"vd-17","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Một chi tiết nắp máy ô tô bằng hợp kim nhôm có nhiều đường cong phức tạp và khoang giải nhiệt bên trong, quy trình hợp lí nhất để chế tạo là:","options":["Đúc áp lực định hình phôi nắp máy nhôm, sau đó phay cắt gọt tinh các mặt lắp ghép ren","Cắt gọt thủ công từ một khối nhôm đặc nặng hàng trăm kg","Rèn tự do bằng búa tạ trên đe","Hàn nối hàng nghìn mảnh nhôm mỏng rời rạc"],"correctIndex":0,"explanation":"Đúc hợp kim nhôm tạo hình khoang phức tạp với thành mỏng, sau đó dùng dao phay CNC gia công mặt phẳng và lỗ ren ráp kín khít."},{"id":"vd-18","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Khi di chuyển trên xe ô tô đang chạy tốc độ cao, hành khách vẫn gọi điện thoại và lướt web liên tục là nhờ công nghệ nào?","options":["Công nghệ mạng di động (3G/4G/5G) tự động chuyển vùng giữa các trạm BTS","Công nghệ dây cáp quang kéo dài theo đuôi xe","Công nghệ kết nối Bluetooth với vệ tinh","Công nghệ điện cơ tịnh tiến"],"correctIndex":0,"explanation":"Mạng di động cellular gồm mạng lưới các trạm thu phát sóng (BTS) đan xen tự động bàn giao kết nối (handover) khi thiết bị di chuyển."},{"id":"vd-19","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Tại sao tại vùng nông thôn hẻo lánh chưa có lưới điện quốc gia, giải pháp nguồn điện phân tán được ưu tiên phát triển nhất hiện nay là gì?","options":["Hệ thống pin năng lượng mặt trời kết hợp lưu trữ ắc quy","Xây dựng nhà máy nhiệt điện đốt than quy mô nhỏ","Kéo máy nổ chạy bằng dầu diesel liên tục 24/24","Đốt đèn sợi đốt công suất cao"],"correctIndex":0,"explanation":"Điện mặt trời mái nhà thân thiện môi trường, chi phí bảo dưỡng thấp, lắp đặt độc lập nhanh chóng ở mọi vùng sâu vùng xa."},{"id":"vd-20","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Vỏ bình gas gia đình chứa khí hóa lỏng áp suất cao được chế tạo từ thép tấm bằng cách nào?","options":["Dập định hình hai nửa bán cầu từ thép tấm rồi hàn nối chu vi kín khít","Đúc bằng gang xám trong khuôn cát dùng một lần","Tiện gọt từ một phôi thép đặc ruột","Đan bằng sợi dây kim loại kéo nguội"],"correctIndex":0,"explanation":"Vỏ bình gas được dập sâu (gia công áp lực) từ thép tấm chất lượng cao, sau đó hàn tự động đường chu vi và kiểm tra áp suất kín khí."},{"id":"vd-21","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Trong máy giặt tự động của gia đình, công nghệ điện cơ xuất hiện ở những bộ phận nào?","options":["Động cơ điện quay lồng giặt (dạng quay) và Van cấp nước điện từ (dạng tịnh tiến)","Chỉ có dây nguồn nối vào ổ cắm","Đèn LED hiển thị thời gian giặt","Vỏ máy giặt bằng nhựa sơn tĩnh điện"],"correctIndex":0,"explanation":"Máy giặt kết hợp cả điện cơ dạng quay (mô tơ lồng giặt) và điện cơ dạng tịnh tiến (van điện từ xả nước và bơm van xả)."},{"id":"vd-22","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Nếu cần truyền file ảnh dung lượng 20MB giữa hai chiếc điện thoại đặt sát nhau mà không cần kết nối internet hay sim 4G, người ta dùng công nghệ nào?","options":["Bluetooth hoặc Wi-Fi Direct","Công nghệ điện cơ tịnh tiến","Sóng truyền hình analog","Hàn hồ quang điện"],"correctIndex":0,"explanation":"Bluetooth và Wi-Fi Direct là giao thức truyền thông không dây kết nối ngang hàng (P2P) giữa hai thiết bị gần nhau mà không cần internet."},{"id":"vd-23","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Để kiểm tra chất lượng mối hàn kết cấu dầm cầu thép mà không phá hủy vật thể, kĩ sư thường dùng phương pháp nào?","options":["Kiểm tra không phá hủy bằng siêu âm (UT) hoặc chụp tia X phóng xạ (RT)","Dùng búa tạ đập vỡ dầm cầu xem bên trong","Đốt nóng mối hàn đến 2000 độ C","Ngâm dầm cầu vào axit sunfuric đậm đặc"],"correctIndex":0,"explanation":"Kiểm tra NDT (Non-Destructive Testing) bằng sóng siêu âm hoặc chụp X-ray phát hiện chính xác khuyết tật rỗ khí, nứt ngầm trong mối hàn cầu thép."},{"id":"vd-24","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Tượng đài danh nhân bằng đồng nặng hàng tấn ở công viên thường được tạo tác bằng công nghệ chính nào?","options":["Công nghệ đúc đồng trong khuôn mẫu chảy hoặc khuôn cát thạch cao","Công nghệ tiện phay trên máy phay","Công nghệ dập thể tích tấm đồng","Công nghệ kéo sợi đồng qua lỗ khuôn"],"correctIndex":0,"explanation":"Nghệ thuật đúc đồng truyền thống và hiện đại (đúc sáp chảy) là phương pháp tối ưu để tạo các tác phẩm điêu khắc tượng khối lớn tinh xảo."},{"id":"vd-25","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Tại sao bóng đèn LED xe máy, ô tô hiện nay ngày càng thay thế bóng đèn halogen sợi đốt truyền thống?","options":["Vì đèn LED sáng hơn, chiếu xa hơn, tốn ít điện bình ắc quy hơn và chống rung sốc cực tốt","Vì đèn halogen quá nhẹ dễ bị gió thổi bay","Vì đèn halogen không thể bật sáng trong bóng tối","Vì đèn LED phát ra tiếng nhạc vui tai khi rẽ"],"correctIndex":0,"explanation":"Đèn Halogen dùng sợi đốt rất dễ đứt khi xe đi vào ổ gà xóc nảy và nóng rực hao bình, trong khi LED chip thể rắn bền bỉ, sáng gom và tiết kiệm điện."},{"id":"vd-26","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Để cắt các tấm kim loại dập vỏ tàu thủy dày 30mm với độ chính xác cao và vết cắt mịn màng, công nghệ gia công cắt gọt tiên tiến nào được ưu tiên?","options":["Công nghệ cắt bằng tia Plasma hoặc tia Laser CNC","Cắt bằng cưa lọng cầm tay","Dùng búa đục sắt nguội","Rót kim loại lỏng lên vết cắt"],"correctIndex":0,"explanation":"Cắt Plasma và Laser sợi quang điều khiển số CNC cho phép cắt thép tấm dày tốc độ cao, mạch cắt thẳng và chính xác."},{"id":"vd-27","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Một hệ thống đèn đường thông minh tự động bật khi trời tối và tự tắt khi trời sáng dựa vào linh kiện cảm biến quang và rơ le là ứng dụng của:","options":["Công nghệ điều khiển và tự động hóa kết hợp công nghệ điện - quang","Công nghệ luyện kim màu","Công nghệ đúc ly tâm","Công nghệ gia công cắt gọt phay bào"],"correctIndex":0,"explanation":"Cảm biến quang học đo độ sáng môi trường gửi tín hiệu kích hoạt mạch tự động hóa đóng ngắt đèn LED đường."},{"id":"vd-28","level":"Vận dụng","levelKey":"vd","category":"Luyện kim & Cơ khí","question":"Dây đồng dẫn điện trong gia đình có đường kính nhỏ 1mm, dài hàng trăm mét được sản xuất bằng quy trình công nghệ nào?","options":["Công nghệ kéo kim loại qua dãy lỗ khuôn đường kính giảm dần","Công nghệ đúc từng thanh rồi mài mỏng","Công nghệ cưa gọt phoi đồng trên máy tiện","Công nghệ hàn hàng triệu que đồng li ti lại với nhau"],"correctIndex":0,"explanation":"Kéo kim loại là công nghệ chuyên dụng để kéo phôi đồng lớn qua các lỗ khuôn thu nhỏ liên tục tạo sợi dây đồng dài vô tận."},{"id":"vd-29","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Học sinh học xong Bài 3 \"Công nghệ phổ biến\" muốn định hướng theo ngành chế tạo Robot và dây chuyền lắp ráp xe điện thì nên thi vào ngành học nào?","options":["Kĩ thuật Cơ điện tử, Kĩ thuật Robot và Tự động hóa","Khoa học Khảo cổ học","Ngôn ngữ học cổ đại","Địa chất học khai khoáng"],"correctIndex":0,"explanation":"Cơ điện tử và Tự động hóa là ngành tích hợp cơ khí chính xác, điện - điện tử và lập trình điều khiển thông minh."},{"id":"vd-30","level":"Vận dụng","levelKey":"vd","category":"Điện & Điện tử","question":"Xu hướng phát triển năng lượng xanh bền vững hiện nay thay thế cho nhiệt điện đốt than là công nghệ nào?","options":["Phát triển điện gió ngoài khơi và điện mặt trời kết hợp lưu trữ năng lượng","Đốt thêm củi rừng nguyên sinh để làm nhiệt điện","Tăng cường đào than đá bùn","Ngừng cung cấp toàn bộ nguồn điện cho xã hội"],"correctIndex":0,"explanation":"Điện gió và điện mặt trời là các nguồn năng lượng tái tạo sạch, không phát thải CO2, xu thế chuyển dịch năng lượng toàn cầu."}];
 
-    // Web Audio Synthesizer
-    class SoundEngine {
-      constructor() {
-        this.ctx = null;
-        this.muted = false;
+    // AUDIO SYNTHESIZER
+    let audioCtx = null;
+    let isMuted = false;
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
       }
-      init() {
-        if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioCtx();
-        }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-      }
-      click() {
-        if (this.muted) return;
-        try {
-          this.init();
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.05);
-          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.05);
-        } catch(e) {}
-      }
-      correct(streak = 1) {
-        if (this.muted) return;
-        try {
-          this.init();
-          const base = 523.25;
-          const mult = Math.min(1.5, 1 + streak * 0.05);
-          [base * mult, base * 1.25 * mult, base * 1.5 * mult, base * 2 * mult].forEach((f, i) => {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.07);
-            gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.07);
-            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.07 + 0.2);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start(this.ctx.currentTime + i * 0.07);
-            osc.stop(this.ctx.currentTime + i * 0.07 + 0.22);
-          });
-        } catch(e) {}
-      }
-      wrong() {
-        if (this.muted) return;
-        try {
-          this.init();
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(220, this.ctx.currentTime);
-          osc.frequency.linearRampToValueAtTime(130, this.ctx.currentTime + 0.25);
-          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.26);
-        } catch(e) {}
-      }
-      victory() {
-        if (this.muted) return;
-        try {
-          this.init();
-          const chords = [
-            { freqs: [523.25, 659.25], start: 0, dur: 0.15 },
-            { freqs: [523.25, 659.25], start: 0.18, dur: 0.15 },
-            { freqs: [523.25, 659.25], start: 0.36, dur: 0.15 },
-            { freqs: [659.25, 783.99], start: 0.54, dur: 0.4 },
-            { freqs: [783.99, 1046.50], start: 0.98, dur: 0.6 }
-          ];
-          chords.forEach(({ freqs, start, dur }) => {
-            freqs.forEach(f => {
-              const osc = this.ctx.createOscillator();
-              const gain = this.ctx.createGain();
-              osc.type = 'triangle';
-              osc.frequency.setValueAtTime(f, this.ctx.currentTime + start);
-              gain.gain.setValueAtTime(0.18, this.ctx.currentTime + start);
-              gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + start + dur);
-              osc.connect(gain);
-              gain.connect(this.ctx.destination);
-              osc.start(this.ctx.currentTime + start);
-              osc.stop(this.ctx.currentTime + start + dur + 0.05);
-            });
-          });
-        } catch(e) {}
-      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
     }
-    const sound = new SoundEngine();
+    function playBeep(freq, type, duration, delay = 0) {
+      if (isMuted) return;
+      const ctx = getAudio();
+      if (!ctx) return;
+      const now = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    }
+    function playCorrect() {
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => playBeep(f, 'triangle', 0.28, i * 0.07));
+    }
+    function playWrong() {
+      playBeep(140, 'sawtooth', 0.35);
+      playBeep(90, 'sawtooth', 0.35, 0.05);
+    }
+    function playStreakFanfare() {
+      [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => playBeep(f, 'sine', 0.3, i * 0.06));
+    }
+    function toggleSound() {
+      isMuted = !isMuted;
+      document.getElementById('soundBtn').textContent = isMuted ? '🔇' : '🔊';
+    }
 
-    // App State
-    let currentTab = 'student'; // 'student' | 'teacher' | 'leaderboard'
-    let isTeacherLoggedIn = false;
-    let questions = JSON.parse(localStorage.getItem('quiz_questions_bank_v1')) || QUESTIONS_BANK;
-    let submissions = JSON.parse(localStorage.getItem('quiz_student_submissions_v1')) || [
-      {
-        id: 's1',
-        studentName: '🚀 Nguyễn Hoàng Nam',
-        studentClass: '10C05',
-        examCode: 'CN10-B3-7821',
-        submittedAt: new Date(Date.now() - 7200000).toISOString(),
-        totalScore: 10.0,
-        correctCount: 10,
-        totalCount: 10,
-        breakdown: { biet: { correct: 4, total: 4 }, hieu: { correct: 3, total: 3 }, van_dung: { correct: 3, total: 3 } },
-        timeSpentSeconds: 142,
-        gamifiedScore: 14850,
-        maxStreak: 10,
-        answers: []
-      },
-      {
-        id: 's2',
-        studentName: '⭐ Trần Minh Thư',
-        studentClass: '10C06',
-        examCode: 'CN10-B3-6192',
-        submittedAt: new Date(Date.now() - 14400000).toISOString(),
-        totalScore: 9.0,
-        correctCount: 9,
-        totalCount: 10,
-        breakdown: { biet: { correct: 4, total: 4 }, hieu: { correct: 3, total: 3 }, van_dung: { correct: 2, total: 3 } },
-        timeSpentSeconds: 165,
-        gamifiedScore: 12900,
-        maxStreak: 7,
-        answers: []
-      },
-      {
-        id: 's3',
-        studentName: '⚡ Lê Bảo Long',
-        studentClass: '10C07',
-        examCode: 'CN10-B3-4410',
-        submittedAt: new Date(Date.now() - 21600000).toISOString(),
-        totalScore: 8.0,
-        correctCount: 8,
-        totalCount: 10,
-        breakdown: { biet: { correct: 4, total: 4 }, hieu: { correct: 2, total: 3 }, van_dung: { correct: 2, total: 3 } },
-        timeSpentSeconds: 180,
-        gamifiedScore: 10800,
-        maxStreak: 5,
-        answers: []
-      },
-      {
-        id: 's4',
-        studentName: '💡 Phạm Thu Trang',
-        studentClass: '10C08',
-        examCode: 'CN10-B3-9124',
-        submittedAt: new Date(Date.now() - 28800000).toISOString(),
-        totalScore: 7.0,
-        correctCount: 7,
-        totalCount: 10,
-        breakdown: { biet: { correct: 3, total: 4 }, hieu: { correct: 2, total: 3 }, van_dung: { correct: 2, total: 3 } },
-        timeSpentSeconds: 195,
-        gamifiedScore: 9100,
-        maxStreak: 4,
-        answers: []
-      }
-    ];
+    // AVATARS
+    const AVATARS = ['🤖', '⚡', '🦉', '🚀', '🦊', '👑', '🐯', '🎯', '🔬', '💡', '🦾', '🔥'];
+    let selectedAvatar = '🤖';
+    let timePerQuestion = 20;
 
-    let activeExam = null;
-    let activeStudent = null;
+    function renderAvatars() {
+      const c = document.getElementById('avatarPicker');
+      c.innerHTML = AVATARS.map(av => `
+        <button type="button" onclick="selectAvatar('${av}')" class="w-10 h-10 text-xl rounded-xl flex items-center justify-center transition ${selectedAvatar === av ? 'bg-purple-600 ring-2 ring-purple-300 scale-110 shadow' : 'bg-slate-800 hover:bg-slate-700'}">
+          ${av}
+        </button>
+      `).join('');
+    }
+    function selectAvatar(av) {
+      selectedAvatar = av;
+      renderAvatars();
+    }
+    function setTimePerQ(t) {
+      timePerQuestion = t;
+      document.querySelectorAll('.timeBtn').forEach(b => {
+        if (Number(b.dataset.time) === t) {
+          b.className = 'timeBtn py-2 rounded-xl bg-purple-600 text-white';
+        } else {
+          b.className = 'timeBtn py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300';
+        }
+      });
+    }
+
+    // STATE
+    let currentExam = null;
     let currentQIndex = 0;
-    let currentTimer = null;
-    let timeLeft = 25;
-    let currentSelectedOption = null;
-    let isCurrentAnswered = false;
-    let points = 0;
-    let streak = 0;
-    let maxStreak = 0;
-    let examAnswers = [];
-    let completedSubmission = null;
-    let questionStartTime = Date.now();
+    let userAnswers = [];
+    let currentPoints = 0;
+    let currentStreak = 0;
+    let lastSubmission = null;
+    let timerInterval = null;
+    let timeLeft = 20;
+    let qStartTime = 0;
+    let examStartTime = 0;
 
     function shuffle(arr) {
       const a = [...arr];
@@ -219,769 +481,457 @@
       return a;
     }
 
-    function generateExam() {
-      const bietPool = shuffle(questions.filter(q => q.level === 'biet')).slice(0, 4);
-      const hieuPool = shuffle(questions.filter(q => q.level === 'hieu')).slice(0, 3);
-      const vanDungPool = shuffle(questions.filter(q => q.level === 'van_dung')).slice(0, 3);
-      
-      const combined = shuffle([...bietPool, ...hieuPool, ...vanDungPool]);
-      const examQuestions = combined.map(q => {
-        const correctText = q.options[q.correctIndex];
-        const shuffledOpts = shuffle(q.options);
-        return {
-          id: q.id,
-          code: q.code,
-          level: q.level,
-          topic: q.topic,
-          question: q.question,
-          options: shuffledOpts,
-          correctIndex: shuffledOpts.indexOf(correctText),
-          explanation: q.explanation
-        };
-      });
-
-      return {
-        examCode: 'CN10-B3-' + Math.floor(1000 + Math.random() * 9000),
-        questions: examQuestions
-      };
-    }
-
-    function render() {
-      const app = document.getElementById('app');
-      
-      const countBiet = questions.filter(q => q.level === 'biet').length;
-      const countHieu = questions.filter(q => q.level === 'hieu').length;
-      const countVanDung = questions.filter(q => q.level === 'van_dung').length;
-
-      let contentHtml = '';
-
-      if (activeExam) {
-        contentHtml = renderQuizGame();
-      } else if (completedSubmission && currentTab === 'student') {
-        contentHtml = renderReview();
-      } else if (currentTab === 'student') {
-        contentHtml = renderStudentPortal(countBiet, countHieu, countVanDung);
-      } else if (currentTab === 'leaderboard') {
-        contentHtml = renderLeaderboard();
-      } else if (currentTab === 'teacher') {
-        contentHtml = renderTeacherPortal(countBiet, countHieu, countVanDung);
-      }
-
-      app.innerHTML = `
-        <!-- Navbar -->
-        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm no-print">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 sm:h-20">
-              <div onclick="setTab('student')" class="flex items-center space-x-3 cursor-pointer group">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-md group-hover:scale-105 transition-transform">
-                  <div class="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
-                    ✨
-                  </div>
-                </div>
-                <div>
-                  <div class="flex items-center space-x-2">
-                    <span class="font-extrabold text-base sm:text-xl tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
-                      Quizizz Công Nghệ 10
-                    </span>
-                    <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                      Bài 3: Công nghệ phổ biến
-                    </span>
-                  </div>
-                  <p class="text-xs text-slate-500 hidden sm:block">
-                    Ngân hàng ${questions.length} câu (${countBiet} Biết • ${countHieu} Hiểu • ${countVanDung} Vận dụng) — Đề thi 10 câu
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex items-center space-x-1 sm:space-x-3">
-                <button onclick="setTab('student')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition ${currentTab === 'student' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-                  Phòng Thi HS
-                </button>
-                <button onclick="setTab('leaderboard')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition ${currentTab === 'leaderboard' ? 'bg-amber-500 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-                  Bảng Vinh Danh
-                </button>
-                <button onclick="setTab('teacher')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition ${currentTab === 'teacher' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-                  ${isTeacherLoggedIn ? 'GV: Mai Hằng' : 'Giáo Viên'}
-                </button>
-                ${isTeacherLoggedIn ? `
-                  <button onclick="teacherLogout()" title="Đăng xuất" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition">
-                    🚪
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="min-h-[85vh]">
-          ${contentHtml}
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 no-print">
-          <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div>Hệ thống Quiz Trắc Nghiệm Công Nghệ 10 • Bài 3: Công nghệ phổ biến</div>
-            <div>Giáo viên phụ trách: <strong class="text-indigo-600">Mai Hằng</strong> • Ma trận 4 Biết - 3 Hiểu - 3 Vận dụng</div>
-          </div>
-        </footer>
-      `;
-
-      if (activeExam) {
-        attachQuizGameHandlers();
-      }
-    }
-
-    function setTab(tab) {
-      if (activeExam) {
-        if (!confirm('Bạn đang làm bài thi. Rời đi sẽ hủy bài thi hiện tại. Bạn có chắc không?')) return;
-        clearInterval(currentTimer);
-        activeExam = null;
-      }
-      sound.click();
-      currentTab = tab;
-      render();
-    }
-
-    function teacherLogout() {
-      sound.click();
-      isTeacherLoggedIn = false;
-      currentTab = 'student';
-      render();
-    }
-
-    function renderStudentPortal(b, h, vd) {
-      return `
-        <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
-          <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white p-6 sm:p-10 mb-8 shadow-xl shadow-indigo-500/15">
-            <div class="relative z-10 text-center sm:text-left sm:flex sm:items-center sm:justify-between">
-              <div class="max-w-xl">
-                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold mb-3">
-                  <span>✨ Chương 1: Đại Cương Về Công Nghệ</span>
-                </div>
-                <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight mb-3">
-                  Đấu Trường Quizizz: <span class="text-amber-300">Bài 3 - Công Nghệ Phổ Biến</span>
-                </h1>
-                <p class="text-sm sm:text-base text-indigo-100 mb-4 leading-relaxed">
-                  Mỗi đề thi tự động rút ngẫu nhiên <strong class="text-yellow-300">10 câu hỏi</strong> theo ma trận: 
-                  <span class="font-bold text-white">4 câu Biết</span> + 
-                  <span class="font-bold text-white">3 câu Hiểu</span> + 
-                  <span class="font-bold text-white">3 câu Vận dụng</span>.
-                </p>
-                <div class="flex flex-wrap gap-2 text-xs">
-                  <span class="px-2.5 py-1 rounded-lg bg-black/20 text-white font-medium">✓ Ngân hàng ${questions.length} câu</span>
-                  <span class="px-2.5 py-1 rounded-lg bg-black/20 text-white font-medium">⏱️ Bấm giờ 25s/câu</span>
-                  <span class="px-2.5 py-1 rounded-lg bg-black/20 text-white font-medium">🔥 Combo thưởng điểm</span>
-                </div>
-              </div>
-              <div class="hidden sm:flex flex-col items-center justify-center p-4 bg-white/10 rounded-2xl border border-white/20">
-                <div class="text-4xl mb-1">🏆</div>
-                <div class="text-xs font-semibold text-indigo-100 text-center">
-                  Giáo viên phụ trách:<br />
-                  <span class="text-yellow-300 font-bold text-sm">Mai Hằng</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/40">
-            <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <span class="text-2xl">📝</span>
-              <span>Thông Tin Thí Sinh Tham Gia Thi</span>
-            </h2>
-
-            <form id="studentForm" onsubmit="handleStartExam(event)" class="space-y-6">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Chọn Avatar</label>
-                <div class="flex flex-wrap gap-2" id="avatarPicker">
-                  ${['🚀', '⚡', '🎯', '💡', '🦁', '🦊', '🐼', '🤖', '👑', '⭐'].map((a, i) => `
-                    <button type="button" onclick="selectAvatar('${a}')" id="av-${a}" class="avatar-btn w-11 h-11 text-xl rounded-2xl flex items-center justify-center transition ${i === 0 ? 'bg-indigo-600 text-white ring-2 ring-indigo-400 scale-110' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
-                      ${a}
-                    </button>
-                  `).join('')}
-                </div>
-                <input type="hidden" id="chosenAvatar" value="🚀">
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Họ và tên học sinh <span class="text-rose-500">*</span>
-                  </label>
-                  <input type="text" id="studentNameInput" required placeholder="Ví dụ: Nguyễn Văn An" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white font-medium transition" />
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Lớp học <span class="text-rose-500">*</span>
-                  </label>
-                  <input type="text" id="studentClassInput" required value="10C05" placeholder="Ví dụ: 10C05" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white font-medium mb-2 transition" />
-                  <div class="flex flex-wrap gap-1.5">
-                    ${QUICK_CLASSES.map(cls => `
-                      <button type="button" onclick="selectClass('${cls}')" id="cls-${cls}" class="class-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition ${cls === '10C05' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-                        ${cls}
-                      </button>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-center justify-between">
-                <span>Cấu trúc đề chuẩn: <strong>4 câu Biết (4.0đ)</strong> + <strong>3 câu Hiểu (3.0đ)</strong> + <strong>3 câu Vận dụng (3.0đ)</strong> = <strong>10.0 điểm</strong></span>
-                <span class="font-bold text-indigo-700">Đạt khi ≥ 5.0đ</span>
-              </div>
-
-              <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white font-extrabold text-lg sm:text-xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2">
-                <span>▶ BẮT ĐẦU VÀO PHÒNG THI</span>
-              </button>
-            </form>
-          </div>
-        </div>
-      `;
-    }
-
-    function selectAvatar(av) {
-      sound.click();
-      document.getElementById('chosenAvatar').value = av;
-      document.querySelectorAll('.avatar-btn').forEach(b => {
-        b.className = 'avatar-btn w-11 h-11 text-xl rounded-2xl flex items-center justify-center transition bg-slate-100 hover:bg-slate-200 text-slate-700';
-      });
-      const el = document.getElementById('av-' + av);
-      if (el) el.className = 'avatar-btn w-11 h-11 text-xl rounded-2xl flex items-center justify-center transition bg-indigo-600 text-white ring-2 ring-indigo-400 scale-110';
-    }
-
-    function selectClass(cls) {
-      sound.click();
-      document.getElementById('studentClassInput').value = cls;
-      document.querySelectorAll('.class-btn').forEach(b => {
-        b.className = 'class-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200';
-      });
-      const el = document.getElementById('cls-' + cls);
-      if (el) el.className = 'class-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm';
-    }
-
+    // START EXAM (4 Biết, 3 Hiểu, 3 Vận dụng)
     function handleStartExam(e) {
       e.preventDefault();
-      const name = document.getElementById('studentNameInput').value.trim();
-      const cls = document.getElementById('studentClassInput').value.trim();
-      const av = document.getElementById('chosenAvatar').value;
+      const name = document.getElementById('inputName').value.trim();
+      const sClass = document.getElementById('inputClass').value;
+      const sId = document.getElementById('inputId').value.trim();
 
-      if (!name || !cls) return;
-      sound.click();
+      const nbPool = QUESTION_BANK.filter(q => q.levelKey === 'nb');
+      const thPool = QUESTION_BANK.filter(q => q.levelKey === 'th');
+      const vdPool = QUESTION_BANK.filter(q => q.levelKey === 'vd');
 
-      activeStudent = {
-        name: av + ' ' + name,
-        studentClass: cls
+      const sNb = shuffle(nbPool).slice(0, 4);
+      const sTh = shuffle(thPool).slice(0, 3);
+      const sVd = shuffle(vdPool).slice(0, 3);
+      const questions = shuffle([...sNb, ...sTh, ...sVd]);
+
+      currentExam = {
+        examCode: 'ĐỀ-CN10-' + Math.floor(100 + Math.random() * 900),
+        studentName: name,
+        studentClass: sClass,
+        studentId: sId,
+        questions
       };
 
-      activeExam = generateExam();
       currentQIndex = 0;
-      points = 0;
-      streak = 0;
-      maxStreak = 0;
-      examAnswers = [];
-      completedSubmission = null;
-      startQuestion();
-    }
+      userAnswers = [];
+      currentPoints = 0;
+      currentStreak = 0;
 
-    function startQuestion() {
-      timeLeft = 25;
-      currentSelectedOption = null;
-      isCurrentAnswered = false;
-      questionStartTime = Date.now();
+      // 3-2-1 Countdown
+      document.getElementById('lobbyScreen').classList.add('hidden');
+      document.getElementById('countdownScreen').classList.remove('hidden');
+      document.getElementById('cdAvatar').textContent = selectedAvatar;
+      document.getElementById('cdName').textContent = name + ' (' + sClass + ') SẴN SÀNG!';
 
-      if (currentTimer) clearInterval(currentTimer);
-      currentTimer = setInterval(() => {
-        timeLeft--;
-        if (timeLeft <= 0) {
-          clearInterval(currentTimer);
-          handleAnswer(-1);
+      let count = 3;
+      document.getElementById('cdNumber').textContent = count;
+      playBeep(600, 'sine', 0.1);
+
+      const cdInt = setInterval(() => {
+        count--;
+        if (count > 0) {
+          document.getElementById('cdNumber').textContent = count;
+          playBeep(600, 'sine', 0.1);
+        } else if (count === 0) {
+          document.getElementById('cdNumber').textContent = 'BẮT ĐẦU!';
+          playStreakFanfare();
         } else {
-          updateTimerBar();
+          clearInterval(cdInt);
+          document.getElementById('countdownScreen').classList.add('hidden');
+          document.getElementById('playScreen').classList.remove('hidden');
+          examStartTime = Date.now();
+          showQuestion(0);
         }
-      }, 1000);
-
-      render();
+      }, 800);
     }
 
-    function updateTimerBar() {
-      const bar = document.getElementById('timerProgressBar');
-      const text = document.getElementById('timerText');
-      if (bar) bar.style.width = ((timeLeft / 25) * 100) + '%';
-      if (text) text.innerText = timeLeft + 's';
-    }
+    const THEMES = [
+      { bg: 'bg-red-500 hover:bg-red-600', shape: '▲', label: 'A' },
+      { bg: 'bg-blue-600 hover:bg-blue-700', shape: '♦', label: 'B' },
+      { bg: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black', shape: '●', label: 'C' },
+      { bg: 'bg-emerald-600 hover:bg-emerald-700', shape: '■', label: 'D' }
+    ];
 
-    function handleAnswer(optIdx) {
-      if (isCurrentAnswered) return;
-      if (currentTimer) clearInterval(currentTimer);
+    function showQuestion(idx) {
+      if (timerInterval) clearInterval(timerInterval);
+      currentQIndex = idx;
+      const q = currentExam.questions[idx];
 
-      isCurrentAnswered = true;
-      currentSelectedOption = optIdx;
+      document.getElementById('hudAvatar').textContent = selectedAvatar;
+      document.getElementById('hudQuestionNum').textContent = 'Câu ' + (idx + 1) + ' / 10';
+      document.getElementById('hudLevelBadge').textContent = q.level;
+      document.getElementById('hudCategory').textContent = q.category;
+      document.getElementById('hudPoints').textContent = currentPoints.toLocaleString();
 
-      const q = activeExam.questions[currentQIndex];
-      const isCorrect = optIdx === q.correctIndex;
-      const timeTaken = Math.max(1, Math.round((Date.now() - questionStartTime) / 1000));
-
-      if (isCorrect) {
-        streak++;
-        if (streak > maxStreak) maxStreak = streak;
-        const speedBonus = Math.round((timeLeft / 25) * 500);
-        points += 1000 + speedBonus + Math.min(1000, streak * 150);
-        sound.correct(streak);
+      if (currentStreak > 1) {
+        document.getElementById('streakBadge').classList.remove('hidden');
+        document.getElementById('streakNum').textContent = currentStreak;
       } else {
-        streak = 0;
-        sound.wrong();
+        document.getElementById('streakBadge').classList.add('hidden');
       }
 
-      examAnswers.push({
+      document.getElementById('qText').textContent = q.question;
+
+      // Timer
+      timeLeft = timePerQuestion || 20;
+      qStartTime = Date.now();
+      if (timePerQuestion > 0) {
+        document.getElementById('timerContainer').classList.remove('hidden');
+        document.getElementById('timerBar').style.width = '100%';
+        document.getElementById('timerText').textContent = timeLeft + 's';
+
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          document.getElementById('timerText').textContent = timeLeft + 's';
+          const p = (timeLeft / timePerQuestion) * 100;
+          document.getElementById('timerBar').style.width = Math.max(0, p) + '%';
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            selectAnswer(null, true);
+          }
+        }, 1000);
+      } else {
+        document.getElementById('timerContainer').classList.add('hidden');
+      }
+
+      // Options
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = q.options.map((opt, optIdx) => {
+        const th = THEMES[optIdx];
+        return `
+          <button type="button" onclick="selectAnswer(${optIdx})" class="p-4 sm:p-5 rounded-2xl flex items-center gap-4 text-left transition transform hover:scale-[1.01] active:scale-95 text-white ${th.bg} shadow-lg cursor-pointer">
+            <div class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center shrink-0 text-xl font-black">${th.shape}</div>
+            <div class="flex-1 font-extrabold text-sm sm:text-base leading-snug">${opt}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectAnswer(optIdx, isTimeout = false) {
+      if (timerInterval) clearInterval(timerInterval);
+      const q = currentExam.questions[currentQIndex];
+      const isCorrect = optIdx === q.correctIndex;
+      const timeSpent = Math.max(1, Math.round((Date.now() - qStartTime) / 1000));
+
+      let earned = 0;
+      if (isCorrect) {
+        currentStreak++;
+        const speedBonus = timePerQuestion > 0 ? Math.round((timeLeft / timePerQuestion) * 500) : 400;
+        earned = 1000 + speedBonus + (currentStreak * 100);
+        currentPoints += earned;
+        if (currentStreak >= 3) playStreakFanfare(); else playCorrect();
+      } else {
+        currentStreak = 0;
+        playWrong();
+      }
+
+      userAnswers.push({
         questionId: q.id,
         questionText: q.question,
         level: q.level,
-        options: q.options,
-        selectedOptionIndex: optIdx,
-        correctOptionIndex: q.correctIndex,
+        category: q.category,
+        selectedOptionText: optIdx !== null ? q.options[optIdx] : '(Hết giờ)',
+        correctOptionText: q.options[q.correctIndex],
         isCorrect,
-        explanation: q.explanation,
-        timeTakenSeconds: timeTaken
+        timeSpent
       });
 
-      render();
+      // Feedback modal
+      const fbModal = document.getElementById('feedbackModal');
+      const fbIcon = document.getElementById('fbIcon');
+      const fbTitle = document.getElementById('fbTitle');
+      const fbPoints = document.getElementById('fbPoints');
+      const fbExp = document.getElementById('fbExplanation');
+
+      if (isCorrect) {
+        fbIcon.textContent = '🎯';
+        fbIcon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-emerald-500/20 text-emerald-400';
+        fbTitle.textContent = 'Chính Xác Tuyệt Đối!';
+        fbTitle.className = 'text-xl font-black text-emerald-400';
+        fbPoints.textContent = '+' + earned.toLocaleString() + ' Điểm Quizizz!';
+        fbPoints.classList.remove('hidden');
+      } else {
+        fbIcon.textContent = '💡';
+        fbIcon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-rose-500/20 text-rose-400';
+        fbTitle.textContent = isTimeout ? 'Hết giờ rồi!' : 'Tiếc quá, chưa chính xác!';
+        fbTitle.className = 'text-xl font-black text-rose-400';
+        fbPoints.classList.add('hidden');
+      }
+
+      fbExp.textContent = q.explanation;
+      fbModal.classList.remove('hidden');
     }
 
     function nextQuestion() {
-      sound.click();
-      if (currentQIndex + 1 < activeExam.questions.length) {
-        currentQIndex++;
-        startQuestion();
+      document.getElementById('feedbackModal').classList.add('hidden');
+      if (currentQIndex + 1 < 10) {
+        showQuestion(currentQIndex + 1);
       } else {
         finishExam();
       }
     }
 
+    // SUBMIT & RESULTS
     function finishExam() {
-      if (currentTimer) clearInterval(currentTimer);
-      
-      const correctCount = examAnswers.filter(a => a.isCorrect).length;
-      const totalCount = activeExam.questions.length;
-      const totalScore = Math.round((correctCount / totalCount) * 10 * 10) / 10;
-      const totalTime = examAnswers.reduce((acc, a) => acc + a.timeTakenSeconds, 0);
+      document.getElementById('playScreen').classList.add('hidden');
+      document.getElementById('resultScreen').classList.remove('hidden');
 
-      completedSubmission = {
-        id: 'sub-' + Date.now(),
-        studentName: activeStudent.name,
-        studentClass: activeStudent.studentClass,
-        examCode: activeExam.examCode,
-        submittedAt: new Date().toISOString(),
-        totalScore,
+      const correctCount = userAnswers.filter(a => a.isCorrect).length;
+      const score10 = Number(((correctCount / 10) * 10).toFixed(1));
+      const totalTime = Math.max(10, Math.round((Date.now() - examStartTime) / 1000));
+
+      const nbC = userAnswers.filter(a => a.level === 'Nhận biết' && a.isCorrect).length;
+      const thC = userAnswers.filter(a => a.level === 'Thông hiểu' && a.isCorrect).length;
+      const vdC = userAnswers.filter(a => a.level === 'Vận dụng' && a.isCorrect).length;
+
+      lastSubmission = {
+        id: 'sub_' + Date.now(),
+        examCode: currentExam.examCode,
+        studentName: currentExam.studentName,
+        studentClass: currentExam.studentClass,
+        studentId: currentExam.studentId,
+        score10,
+        quizizzPoints: currentPoints,
         correctCount,
-        totalCount,
-        breakdown: {
-          biet: { correct: examAnswers.filter(a => a.level === 'biet' && a.isCorrect).length, total: examAnswers.filter(a => a.level === 'biet').length },
-          hieu: { correct: examAnswers.filter(a => a.level === 'hieu' && a.isCorrect).length, total: examAnswers.filter(a => a.level === 'hieu').length },
-          van_dung: { correct: examAnswers.filter(a => a.level === 'van_dung' && a.isCorrect).length, total: examAnswers.filter(a => a.level === 'van_dung').length }
-        },
         timeSpentSeconds: totalTime,
-        gamifiedScore: points,
-        maxStreak,
-        answers: examAnswers
+        submittedAt: new Date().toISOString(),
+        stats: { nbCorrect: nbC, nbTotal: 4, thCorrect: thC, thTotal: 3, vdCorrect: vdC, vdTotal: 3 },
+        answers: userAnswers
       };
 
-      submissions.unshift(completedSubmission);
-      localStorage.setItem('quiz_student_submissions_v1', JSON.stringify(submissions));
+      // Save to localStorage
+      saveToCentral(lastSubmission);
 
-      activeExam = null;
-      render();
+      // Populate Result Screen
+      document.getElementById('resStudentName').textContent = lastSubmission.studentName;
+      document.getElementById('resSubDetails').textContent = 'Lớp ' + lastSubmission.studentClass + ' • ' + lastSubmission.examCode;
+      document.getElementById('resScore10').textContent = score10.toFixed(1);
+      document.getElementById('resPoints').textContent = currentPoints.toLocaleString();
+      document.getElementById('resTime').textContent = totalTime + 's';
+      document.getElementById('resNb').textContent = nbC + ' / 4';
+      document.getElementById('resTh').textContent = thC + ' / 3';
+      document.getElementById('resVd').textContent = vdC + ' / 3';
 
-      if (totalScore >= 5.0) {
-        sound.victory();
-        if (window.confetti) {
-          window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        }
+      if (window.confetti) {
+        window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      }
+      playStreakFanfare();
+    }
+
+    // CENTRAL STORAGE
+    function getStoredSubmissions() {
+      try {
+        const raw = localStorage.getItem('quizizz_cn10_submissions_v1');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
       }
     }
-
-    function renderQuizGame() {
-      const q = activeExam.questions[currentQIndex];
-      const optStyles = [
-        { bg: 'bg-rose-500 hover:bg-rose-600', sym: '▲', label: 'A' },
-        { bg: 'bg-blue-600 hover:bg-blue-700', sym: '◆', label: 'B' },
-        { bg: 'bg-amber-500 hover:bg-amber-600', sym: '●', label: 'C' },
-        { bg: 'bg-emerald-600 hover:bg-emerald-700', sym: '■', label: 'D' }
-      ];
-
-      const levelBadge = q.level === 'biet' 
-        ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Mức 1: Nhận Biết (4 câu)</span>'
-        : q.level === 'hieu'
-        ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300">Mức 2: Thông Hiểu (3 câu)</span>'
-        : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300">Mức 3: Vận Dụng (3 câu)</span>';
-
-      const isCorrect = currentSelectedOption === q.correctIndex;
-
-      return `
-        <div class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
-          <div class="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-lg shadow-slate-200/50 mb-6">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center space-x-2">
-                <span class="text-xs font-extrabold px-3 py-1 rounded-xl bg-indigo-600 text-white">
-                  CÂU ${currentQIndex + 1} / ${activeExam.questions.length}
-                </span>
-                ${levelBadge}
-              </div>
-              <div class="flex items-center space-x-3">
-                ${streak > 1 ? `<span class="px-3 py-1 rounded-xl bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold">🔥 COMBO x${streak}</span>` : ''}
-                <span class="px-3 py-1 rounded-xl bg-purple-100 text-purple-800 border border-purple-300 text-xs font-bold">⚡ ${points.toLocaleString()} pts</span>
-                <button onclick="setTab('student')" class="text-xs text-slate-400 hover:text-slate-600 font-semibold cursor-pointer">Thoát</button>
-              </div>
-            </div>
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
-                <span>⏱️ Thời gian câu hỏi</span>
-                <span id="timerText" class="font-mono text-sm font-extrabold text-slate-700">${timeLeft}s</span>
-              </div>
-              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-                <div id="timerProgressBar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-indigo-500 transition-all duration-1000" style="width: ${(timeLeft / 25) * 100}%"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 mb-6">
-            <div class="text-xs uppercase font-bold tracking-wider text-indigo-600 mb-2 flex items-center gap-2">
-              <span>📖 Chủ đề: ${q.topic}</span>
-              <span class="text-slate-300">•</span>
-              <span class="text-slate-500 font-mono">Mã: ${q.code}</span>
-            </div>
-            <h2 class="text-lg sm:text-2xl font-bold text-slate-900 leading-relaxed">
-              ${q.question}
-            </h2>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            ${q.options.map((opt, idx) => {
-              const s = optStyles[idx];
-              let btnClass = s.bg + ' text-white shadow-md';
-              if (isCurrentAnswered) {
-                if (idx === q.correctIndex) {
-                  btnClass = 'bg-emerald-600 ring-4 ring-emerald-300 text-white scale-102';
-                } else if (idx === currentSelectedOption && idx !== q.correctIndex) {
-                  btnClass = 'bg-rose-600 text-white line-through opacity-70';
-                } else {
-                  btnClass = 'bg-slate-200 text-slate-500 opacity-40 shadow-none';
-                }
-              }
-
-              return `
-                <button onclick="handleAnswer(${idx})" ${isCurrentAnswered ? 'disabled' : ''} class="${btnClass} relative p-5 sm:p-6 rounded-2xl font-bold text-left transition-all cursor-pointer">
-                  <div class="flex items-start space-x-3.5">
-                    <span class="w-8 h-8 rounded-xl bg-black/15 flex items-center justify-center font-black text-sm shrink-0">${s.sym}</span>
-                    <div class="flex-1">
-                      <span class="text-xs opacity-80 font-semibold block mb-0.5">Phương án ${s.label}:</span>
-                      <span class="text-sm sm:text-base leading-snug">${opt}</span>
-                    </div>
-                  </div>
-                </button>
-              `;
-            }).join('')}
-          </div>
-
-          ${isCurrentAnswered ? `
-            <div class="p-6 rounded-3xl border mb-6 shadow-xl ${isCorrect ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300'}">
-              <div class="flex items-center justify-between mb-3">
-                <span class="font-extrabold text-lg sm:text-xl ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
-                  ${isCorrect ? '✓ CHÍNH XÁC! TUYỆT VỜI 🎉' : '✗ CHƯA CHÍNH XÁC! 💡'}
-                </span>
-                <button onclick="nextQuestion()" class="py-2.5 px-6 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-extrabold text-sm sm:text-base shadow-md cursor-pointer">
-                  ${currentQIndex + 1 < activeExam.questions.length ? 'CÂU TIẾP THEO ➔' : 'XEM KẾT QUẢ ➔'}
-                </button>
-              </div>
-              <div class="text-sm text-slate-800 bg-white p-4 rounded-2xl border border-slate-200">
-                <div class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">Kiến thức cốt lõi (SGK Công nghệ 10):</div>
-                ${q.explanation}
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      `;
+    function saveToCentral(sub) {
+      const all = getStoredSubmissions();
+      all.unshift(sub);
+      all.sort((a,b) => b.quizizzPoints - a.quizizzPoints);
+      localStorage.setItem('quizizz_cn10_submissions_v1', JSON.stringify(all));
     }
 
-    function attachQuizGameHandlers() {}
-
-    function renderReview() {
-      const s = completedSubmission;
-      return `
-        <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
-          <div class="relative rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 mb-8 shadow-xl shadow-slate-200/50 text-center overflow-hidden">
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold mb-4 border border-indigo-200">
-              <span>🏆 BÁO CÁO KẾT QUẢ THI TRẮC NGHIỆM</span>
-            </div>
-            <h1 class="text-3xl sm:text-4xl font-black mb-2 ${s.totalScore >= 8.0 ? 'text-emerald-600' : s.totalScore >= 5.0 ? 'text-sky-600' : 'text-rose-600'}">
-              ${s.totalScore >= 8.0 ? 'GIỎI! XUẤT SẮC 👏' : s.totalScore >= 5.0 ? 'ĐẠT YÊU CẦU! 🎯' : 'CẦN CỐ GẮNG THÊM! 💪'}
-            </h1>
-            <div class="flex flex-col items-center justify-center my-4">
-              <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 p-1 shadow-xl">
-                <div class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
-                  <span class="text-4xl font-black text-slate-900">${s.totalScore.toFixed(1)}</span>
-                  <span class="text-xs uppercase font-extrabold text-slate-400">Thang 10đ</span>
-                </div>
-              </div>
-              <span class="text-sm font-semibold text-slate-500 mt-2">Đúng ${s.correctCount} / ${s.totalCount} câu</span>
-            </div>
-
-            <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-600">
-              <span>Thí sinh: <strong class="text-slate-900">${s.studentName}</strong></span>
-              <span>•</span>
-              <span>Lớp: <strong class="text-slate-900">${s.studentClass}</strong></span>
-              <span>•</span>
-              <span>Mã đề: <strong class="text-indigo-600 font-bold">${s.examCode}</strong></span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 max-w-2xl mx-auto text-left">
-              <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-                <div class="text-xs font-bold text-emerald-800 uppercase mb-1">Mức Biết (4 câu)</div>
-                <div class="text-2xl font-black text-slate-900">${s.breakdown.biet.correct} / ${s.breakdown.biet.total}</div>
-              </div>
-              <div class="p-4 rounded-2xl bg-sky-50 border border-sky-200">
-                <div class="text-xs font-bold text-sky-800 uppercase mb-1">Mức Hiểu (3 câu)</div>
-                <div class="text-2xl font-black text-slate-900">${s.breakdown.hieu.correct} / ${s.breakdown.hieu.total}</div>
-              </div>
-              <div class="p-4 rounded-2xl bg-purple-50 border border-purple-200">
-                <div class="text-xs font-bold text-purple-800 uppercase mb-1">Mức Vận Dụng (3 câu)</div>
-                <div class="text-2xl font-black text-slate-900">${s.breakdown.van_dung.correct} / ${s.breakdown.van_dung.total}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-wrap items-center justify-center gap-3 mb-10 no-print">
-            <button onclick="setTab('student')" class="py-3 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm sm:text-base shadow-md cursor-pointer">
-              THI ĐỀ MỚI (TẠO ĐỀ KHÁC)
-            </button>
-            <button onclick="setTab('leaderboard')" class="py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-sm sm:text-base shadow-md cursor-pointer">
-              BẢNG VINH DANH
-            </button>
-            <button onclick="window.print()" class="py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-300 shadow-sm cursor-pointer">
-              🖨️ In Kết Quả
-            </button>
-          </div>
-
-          <div class="space-y-4">
-            <h2 class="text-xl font-bold text-slate-900">Chi Tiết Lời Giải Từng Câu Hỏi (${s.answers.length} câu)</h2>
-            ${s.answers.map((ans, idx) => `
-              <div class="p-5 rounded-3xl border ${ans.isCorrect ? 'bg-white border-emerald-300 shadow-sm' : 'bg-white border-rose-300 shadow-sm'}">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Câu ${idx + 1}</span>
-                  <span class="text-xs font-bold ${ans.isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${ans.isCorrect ? '✓ Đúng (+1.0đ)' : '✗ Chưa đúng (0đ)'}</span>
-                </div>
-                <h3 class="font-bold text-slate-900 mb-3">${ans.questionText}</h3>
-                <div class="space-y-1.5 mb-3">
-                  ${ans.options.map((opt, oIdx) => `
-                    <div class="p-2.5 rounded-xl border text-xs sm:text-sm flex items-center justify-between ${oIdx === ans.correctOptionIndex ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-bold' : oIdx === ans.selectedOptionIndex ? 'bg-rose-50 border-rose-400 text-rose-950 line-through' : 'bg-slate-50 border-slate-200 text-slate-600'}">
-                      <span>${['A', 'B', 'C', 'D'][oIdx]}. ${opt}</span>
-                      ${oIdx === ans.correctOptionIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">ĐÁP ÁN ĐÚNG</span>' : ''}
-                      ${oIdx === ans.selectedOptionIndex && oIdx !== ans.correctOptionIndex ? '<span class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded font-black">EM CHỌN</span>' : ''}
-                    </div>
-                  `).join('')}
-                </div>
-                <div class="p-3 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-950">
-                  <strong>💡 Lời giải:</strong> ${ans.explanation}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
+    // NAVIGATION
+    function goToLobby() {
+      document.querySelectorAll('#appRoot > div').forEach(d => d.classList.add('hidden'));
+      document.getElementById('lobbyScreen').classList.remove('hidden');
+    }
+    function goToLeaderboard() {
+      document.querySelectorAll('#appRoot > div').forEach(d => d.classList.add('hidden'));
+      document.getElementById('leaderboardScreen').classList.remove('hidden');
+      renderLeaderboard();
     }
 
     function renderLeaderboard() {
-      const sorted = [...submissions].sort((a, b) => b.totalScore - a.totalScore || (b.gamifiedScore || 0) - (a.gamifiedScore || 0));
-      return `
-        <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
-          <div class="text-center mb-8">
-            <div class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold mb-3 border border-amber-200">
-              <span>🏆 BẢNG XẾP HẠNG & VINH DANH HỌC SINH</span>
-            </div>
-            <h1 class="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">Top Thí Sinh Đạt Điểm Cao Nhất</h1>
-            <p class="text-sm text-slate-500 mt-2">Môn Công nghệ 10 - Bài 3: Công nghệ phổ biến • Giáo viên: Mai Hằng</p>
-          </div>
+      const all = getStoredSubmissions();
+      const select = document.getElementById('filterClass');
+      const curClass = select.value;
 
-          <div class="space-y-3">
-            ${sorted.map((item, idx) => `
-              <div class="p-4 sm:p-5 rounded-2xl border flex items-center justify-between ${idx === 0 ? 'bg-amber-50/70 border-amber-300 shadow-md' : 'bg-white border-slate-200'}">
-                <div class="flex items-center space-x-3.5">
-                  <span class="text-xl w-8 text-center">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1)}</span>
-                  <div>
-                    <div class="flex items-center space-x-2">
-                      <span class="font-extrabold text-slate-900">${item.studentName}</span>
-                      <span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700">${item.studentClass}</span>
-                    </div>
-                    <div class="text-xs text-slate-500 mt-0.5">Đúng ${item.correctCount}/${item.totalCount} câu • Mã đề: ${item.examCode}</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-2xl font-black text-emerald-600">${item.totalScore.toFixed(1)} <span class="text-xs text-slate-400">đ</span></div>
-                  <div class="text-xs text-purple-700 font-bold">${(item.gamifiedScore || 0).toLocaleString()} pts</div>
-                </div>
+      // Unique classes
+      const classes = Array.from(new Set(all.map(s => s.studentClass).filter(Boolean))).sort();
+      select.innerHTML = '<option value="ALL">Tất Cả Các Lớp (' + all.length + ')</option>' +
+        classes.map(c => `<option value="${c}" ${c === curClass ? 'selected' : ''}>Lớp ${c}</option>`).join('');
+
+      const search = document.getElementById('searchStudent').value.toLowerCase();
+      const filtered = all.filter(s => {
+        const matchC = select.value === 'ALL' || s.studentClass === select.value;
+        const matchS = !search || s.studentName.toLowerCase().includes(search) || s.examCode.toLowerCase().includes(search);
+        return matchC && matchS;
+      });
+
+      const body = document.getElementById('leaderboardBody');
+      if (filtered.length === 0) {
+        body.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-500">Chưa có kết quả nộp bài nào.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = filtered.map((s, idx) => `
+        <tr class="hover:bg-slate-750 ${idx === 0 ? 'bg-amber-500/10' : ''}">
+          <td class="py-3 px-3 text-center">
+            <span class="inline-flex w-7 h-7 rounded-xl items-center justify-center font-black ${idx === 0 ? 'bg-amber-400 text-slate-950 shadow' : 'bg-slate-800 text-slate-300'}">${idx + 1}</span>
+          </td>
+          <td class="py-3 px-4 font-bold text-white">${s.studentName}</td>
+          <td class="py-3 px-3 text-center font-bold text-indigo-300">${s.studentClass}</td>
+          <td class="py-3 px-3 font-mono text-purple-400">${s.examCode}</td>
+          <td class="py-3 px-3 text-center font-black text-emerald-400 text-base">${s.score10.toFixed(1)}</td>
+          <td class="py-3 px-3 text-center font-mono font-bold text-amber-400">${s.quizizzPoints.toLocaleString()}</td>
+          <td class="py-3 px-3 text-center text-xs text-slate-300">
+            <span class="text-blue-400 font-bold">${s.stats.nbCorrect}</span> /
+            <span class="text-purple-400 font-bold">${s.stats.thCorrect}</span> /
+            <span class="text-amber-400 font-bold">${s.stats.vdCorrect}</span>
+          </td>
+          <td class="py-3 px-3 text-center text-xs font-mono text-slate-400">${Math.floor(s.timeSpentSeconds / 60)}p ${s.timeSpentSeconds % 60}s</td>
+        </tr>
+      `).join('');
+    }
+
+    // EXCEL EXPORT USING SHEETJS
+    function exportAllToExcel() {
+      if (!window.XLSX) { alert('Thư viện XLSX đang tải...'); return; }
+      const submissions = getStoredSubmissions();
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Bảng điểm chung
+      const sheet1Data = submissions.map((s, i) => ({
+        'STT': i + 1,
+        'Họ và Tên': s.studentName,
+        'Lớp': s.studentClass,
+        'Mã Đề': s.examCode,
+        'Điểm (/10)': s.score10,
+        'Điểm Quizizz': s.quizizzPoints,
+        'Số Câu Đúng': s.correctCount + '/10',
+        'Nhận Biết': s.stats.nbCorrect + '/4',
+        'Thông Hiểu': s.stats.thCorrect + '/3',
+        'Vận Dụng': s.stats.vdCorrect + '/3',
+        'Thời Gian Làm': s.timeSpentSeconds + 's',
+        'Thời Gian Nộp': new Date(s.submittedAt).toLocaleString('vi-VN')
+      }));
+      const ws1 = XLSX.utils.json_to_sheet(sheet1Data);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Bang_Diem_Chung');
+
+      // Sheet 2: 100 câu hỏi
+      const sheet2Data = QUESTION_BANK.map((q, idx) => ({
+        'STT': idx + 1,
+        'Mã Câu': q.id,
+        'Mức Độ': q.level,
+        'Lĩnh Vực': q.category,
+        'Nội Dung': q.question,
+        'Đáp Án A': q.options[0],
+        'Đáp Án B': q.options[1],
+        'Đáp Án C': q.options[2],
+        'Đáp Án D': q.options[3],
+        'Đáp Án Đúng': ['A','B','C','D'][q.correctIndex],
+        'Giải Thích SGK': q.explanation
+      }));
+      const ws2 = XLSX.utils.json_to_sheet(sheet2Data);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Ngan_Hang_100_Cau');
+
+      XLSX.writeFile(wb, 'Bang_Diem_Quizizz_Cong_Nghe_10_Bai_3.xlsx');
+    }
+
+    function exportSingleStudentExcel() {
+      if (!lastSubmission || !window.XLSX) return;
+      const wb = XLSX.utils.book_new();
+      const info = [
+        { 'Mục': 'Bài Thi', 'Chi Tiết': 'Công Nghệ 10 - Bài 3: Công Nghệ Phổ Biến' },
+        { 'Mục': 'Họ và Tên', 'Chi Tiết': lastSubmission.studentName },
+        { 'Mục': 'Lớp', 'Chi Tiết': lastSubmission.studentClass },
+        { 'Mục': 'Mã Đề', 'Chi Tiết': lastSubmission.examCode },
+        { 'Mục': 'Điểm Thang 10', 'Chi Tiết': lastSubmission.score10 + ' / 10' },
+        { 'Mục': 'Điểm Quizizz', 'Chi Tiết': lastSubmission.quizizzPoints },
+        { 'Mục': 'Số Câu Đúng', 'Chi Tiết': lastSubmission.correctCount + ' / 10' }
+      ];
+      const ws = XLSX.utils.json_to_sheet(info);
+      XLSX.utils.book_append_sheet(wb, ws, 'Ket_Qua');
+      XLSX.writeFile(wb, 'Ket_Qua_' + lastSubmission.studentName + '_' + lastSubmission.examCode + '.xlsx');
+    }
+
+    function exportBankOnlyToExcel() {
+      if (!window.XLSX) return;
+      const wb = XLSX.utils.book_new();
+      const data = QUESTION_BANK.map((q, idx) => ({
+        'STT': idx + 1,
+        'Mã Câu': q.id,
+        'Mức Độ': q.level,
+        'Lĩnh Vực': q.category,
+        'Câu Hỏi': q.question,
+        'Đáp Án A': q.options[0],
+        'Đáp Án B': q.options[1],
+        'Đáp Án C': q.options[2],
+        'Đáp Án D': q.options[3],
+        'Đáp Án Đúng': ['A','B','C','D'][q.correctIndex],
+        'Giải Thích': q.explanation
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, 'Ngan_Hang_100_Cau');
+      XLSX.writeFile(wb, 'Ngan_Hang_100_Cau_Hoi_Cong_Nghe_10_Bai_3.xlsx');
+    }
+
+    // MODALS: BANK & REVIEW
+    function openBankModal() {
+      document.getElementById('bankModal').classList.remove('hidden');
+      renderBankList();
+    }
+    function closeBankModal() {
+      document.getElementById('bankModal').classList.add('hidden');
+    }
+    function renderBankList() {
+      const lvl = document.getElementById('bankLevelSelect').value;
+      const kw = document.getElementById('bankSearch').value.toLowerCase();
+      const list = QUESTION_BANK.filter(q => {
+        const matchL = lvl === 'ALL' || q.levelKey === lvl;
+        const matchK = !kw || q.question.toLowerCase().includes(kw) || q.options.some(o => o.toLowerCase().includes(kw));
+        return matchL && matchK;
+      });
+
+      const c = document.getElementById('bankContainer');
+      c.innerHTML = list.map((q, i) => `
+        <div class="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-400">#${i+1} (${q.id.toUpperCase()})</span>
+            <span class="px-2 py-0.5 rounded-full font-black text-[10px] uppercase bg-purple-500/20 text-purple-300">${q.level}</span>
+          </div>
+          <p class="font-bold text-white text-sm">${q.question}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-300">
+            ${q.options.map((opt, oIdx) => `
+              <div class="p-2 rounded-lg border ${oIdx === q.correctIndex ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-300 font-bold' : 'bg-slate-900/60 border-slate-700/50'}">
+                ${['A','B','C','D'][oIdx]}. ${opt}
               </div>
             `).join('')}
           </div>
+          <p class="text-[11px] text-amber-300/90 pt-1">💡 ${q.explanation}</p>
         </div>
-      `;
+      `).join('');
     }
 
-    function renderTeacherPortal(b, h, vd) {
-      if (!isTeacherLoggedIn) {
-        return `
-          <div class="max-w-md mx-auto px-4 py-12">
-            <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50">
-              <div class="text-center mb-6">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center mx-auto mb-3 text-2xl text-white">
-                  🔒
-                </div>
-                <h2 class="text-2xl font-black text-slate-900">Đăng Nhập Giáo Viên</h2>
-                <p class="text-xs text-slate-500 mt-1">Dành riêng cho giáo viên bộ môn Công nghệ 10</p>
-              </div>
-
-              <div id="loginErrBox" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
-                ⚠️ Tên đăng nhập hoặc mật khẩu không chính xác!
-              </div>
-
-              <form onsubmit="handleTeacherLogin(event)" class="space-y-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tài khoản giáo viên</label>
-                  <input type="text" id="tUser" required placeholder="Nhập tên tài khoản..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white" />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Mật khẩu</label>
-                  <input type="password" id="tPass" required placeholder="Nhập mật khẩu..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white" />
-                </div>
-                <button type="submit" class="w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-sm shadow-md cursor-pointer">
-                  ĐĂNG NHẬP HỆ THỐNG
-                </button>
-              </form>
-            </div>
+    function openReviewModal() {
+      if (!lastSubmission) return;
+      document.getElementById('reviewModal').classList.remove('hidden');
+      document.getElementById('reviewSubtitle').textContent = lastSubmission.studentName + ' • ' + lastSubmission.examCode;
+      const c = document.getElementById('reviewContainer');
+      c.innerHTML = userAnswers.map((ans, i) => `
+        <div class="p-4 rounded-2xl border ${ans.isCorrect ? 'bg-slate-800/60 border-emerald-500/40' : 'bg-slate-800/60 border-rose-500/40'}">
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="font-bold text-slate-400">Câu ${i+1} (${ans.level})</span>
+            <span class="font-bold ${ans.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${ans.isCorrect ? '✓ Đúng' : '✗ Sai'}</span>
           </div>
-        `;
-      }
-
-      return `
-        <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-          <div class="bg-gradient-to-r from-purple-50 via-white to-indigo-50 border border-purple-200 rounded-3xl p-6 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center space-x-3.5">
-              <div class="w-12 h-12 rounded-2xl bg-purple-100 border border-purple-300 flex items-center justify-center text-2xl">
-                👩‍🏫
-              </div>
-              <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900">Khu Vực Quản Trị Giáo Viên: Mai Hằng</h1>
-                <p class="text-xs text-slate-500">Môn: Công nghệ 10 • Quản lý ngân hàng ${questions.length} câu hỏi & theo dõi điểm số</p>
-              </div>
-            </div>
-            <button onclick="teacherLogout()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300 shadow-sm cursor-pointer">
-              Đăng xuất
-            </button>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <div class="text-xs font-bold text-slate-500 uppercase">Tổng câu hỏi</div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">${questions.length} câu</div>
-              <div class="text-[11px] text-indigo-600 font-semibold mt-1">${b} Biết • ${h} Hiểu • ${vd} Vận dụng</div>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <div class="text-xs font-bold text-slate-500 uppercase">Lượt học sinh thi</div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">${submissions.length} lượt</div>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <div class="text-xs font-bold text-slate-500 uppercase">Điểm trung bình</div>
-              <div class="text-2xl sm:text-3xl font-black text-amber-600 mt-1">
-                ${submissions.length > 0 ? (submissions.reduce((acc, s) => acc + s.totalScore, 0) / submissions.length).toFixed(1) : '0.0'}/10
-              </div>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <div class="text-xs font-bold text-slate-500 uppercase">Tỷ lệ đạt (≥ 5.0)</div>
-              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">
-                ${submissions.length > 0 ? Math.round((submissions.filter(s => s.totalScore >= 5.0).length / submissions.length) * 100) : 0}%
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-bold text-slate-900">Danh Sách Bài Thi Của Học Sinh</h3>
-              <button onclick="exportCSV()" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer">
-                📥 Xuất File Excel / CSV
-              </button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs sm:text-sm">
-                <thead class="bg-slate-50 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
-                  <tr>
-                    <th class="py-3 px-4">Thí sinh</th>
-                    <th class="py-3 px-3">Lớp</th>
-                    <th class="py-3 px-3">Mã đề</th>
-                    <th class="py-3 px-3 text-center">Điểm số</th>
-                    <th class="py-3 px-3 text-center">Biết (/4)</th>
-                    <th class="py-3 px-3 text-center">Hiểu (/3)</th>
-                    <th class="py-3 px-3 text-center">Vận dụng (/3)</th>
-                    <th class="py-3 px-3">Thời gian</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-slate-700">
-                  ${submissions.map(sub => `
-                    <tr class="hover:bg-slate-50">
-                      <td class="py-3 px-4 font-bold text-slate-900">${sub.studentName}</td>
-                      <td class="py-3 px-3 font-bold text-indigo-600">${sub.studentClass}</td>
-                      <td class="py-3 px-3 font-mono text-xs text-slate-500">${sub.examCode}</td>
-                      <td class="py-3 px-3 text-center font-extrabold ${sub.totalScore >= 8.0 ? 'text-emerald-700' : 'text-slate-900'}">${sub.totalScore.toFixed(1)}</td>
-                      <td class="py-3 px-3 text-center text-emerald-700 font-bold">${sub.breakdown.biet.correct}/4</td>
-                      <td class="py-3 px-3 text-center text-sky-700 font-bold">${sub.breakdown.hieu.correct}/3</td>
-                      <td class="py-3 px-3 text-center text-purple-700 font-bold">${sub.breakdown.van_dung.correct}/3</td>
-                      <td class="py-3 px-3 text-xs">${Math.floor(sub.timeSpentSeconds / 60)}m ${sub.timeSpentSeconds % 60}s</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <p class="font-bold text-white text-sm mb-2">${ans.questionText}</p>
+          <p class="text-xs text-slate-300">Đã chọn: <span class="font-bold ${ans.isCorrect ? 'text-emerald-300' : 'text-rose-300 line-through'}">${ans.selectedOptionText}</span></p>
+          ${!ans.isCorrect ? `<p class="text-xs text-emerald-300 font-bold">Đáp án đúng: ${ans.correctOptionText}</p>` : ''}
         </div>
-      `;
+      `).join('');
+    }
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.add('hidden');
     }
 
-    function handleTeacherLogin(e) {
-      e.preventDefault();
-      const u = document.getElementById('tUser').value.trim().toLowerCase();
-      const p = document.getElementById('tPass').value.trim();
-
-      if (u === 'maihang' && p === '123456hang') {
-        sound.correct();
-        isTeacherLoggedIn = true;
-        render();
-      } else {
-        sound.wrong();
-        document.getElementById('loginErrBox').classList.remove('hidden');
-      }
+    // INIT
+    renderAvatars();
+    // Default sample data if empty
+    if (!localStorage.getItem('quizizz_cn10_submissions_v1')) {
+      const sample = [
+        { id: 's1', examCode: 'ĐỀ-CN10-721', studentName: 'Trần Thị Mai', studentClass: '10A1', score10: 10.0, quizizzPoints: 9850, correctCount: 10, timeSpentSeconds: 114, submittedAt: new Date().toISOString(), stats: { nbCorrect: 4, thCorrect: 3, vdCorrect: 3 } },
+        { id: 's2', examCode: 'ĐỀ-CN10-415', studentName: 'Nguyễn Văn An', studentClass: '10A1', score10: 9.0, quizizzPoints: 8900, correctCount: 9, timeSpentSeconds: 135, submittedAt: new Date().toISOString(), stats: { nbCorrect: 4, thCorrect: 3, vdCorrect: 2 } },
+        { id: 's3', examCode: 'ĐỀ-CN10-809', studentName: 'Lê Hoàng Long', studentClass: '10A2', score10: 8.0, quizizzPoints: 7650, correctCount: 8, timeSpentSeconds: 148, submittedAt: new Date().toISOString(), stats: { nbCorrect: 4, thCorrect: 2, vdCorrect: 2 } }
+      ];
+      localStorage.setItem('quizizz_cn10_submissions_v1', JSON.stringify(sample));
     }
-
-    function exportCSV() {
-      if (submissions.length === 0) return alert('Chưa có bài thi nào!');
-      const headers = ['STT', 'Họ và tên', 'Lớp', 'Mã đề', 'Điểm tổng', 'Đúng/Tổng', 'Thời gian'];
-      const rows = submissions.map((s, idx) => [
-        idx + 1,
-        '"' + s.studentName + '"',
-        s.studentClass,
-        s.examCode,
-        s.totalScore,
-        s.correctCount + '/' + s.totalCount,
-        s.timeSpentSeconds + 's'
-      ]);
-      const csvContent = 'data:text/csv;charset=utf-8,﻿' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-      const link = document.createElement('a');
-      link.setAttribute('href', encodeURI(csvContent));
-      link.setAttribute('download', 'Bang_Diem_Hoc_Sinh_Cong_Nghe_10.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
-
-    // Initialize App on load
-    render();
   </script>
 </body>
 </html>
